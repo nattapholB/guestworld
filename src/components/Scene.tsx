@@ -10,7 +10,7 @@ import { GameScene } from './Game/GameScene'
 export function Scene() {
   const phase = useGameStore((s) => s.phase)
   const finished = phase === 'won' || phase === 'lost'
-  const showGame = phase === 'playing' || finished
+  const showGame = phase !== 'menu'
 
   return (
     <Canvas camera={{ position: [0, 0.4, 10.5], fov: 55 }} shadows>

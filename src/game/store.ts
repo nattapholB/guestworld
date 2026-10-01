@@ -4,7 +4,7 @@ import { computeFeedback, pickRandomWord, MAX_GUESSES, WORD_LENGTH, type LetterS
 import { computeScore } from './scoring'
 import { sfx } from '../audio/sfx'
 
-export type Phase = 'menu' | 'playing' | 'won' | 'lost'
+export type Phase = 'menu' | 'howto' | 'playing' | 'won' | 'lost'
 export type Mode = 'classic' | 'timer'
 
 interface GameState {
@@ -20,13 +20,40 @@ interface GameState {
   startedAt: number | null
   finishedAt: number | null
   score: number | null
+  helpOpen: boolean
+  showHowTo: boolean
 
-  startGame: (mode: Mode) => void
+  startGame: (mode: Mode, opts?: { skipHowTo?: boolean }) => void
+  beginPlay: () => void
+  setHelpOpen: (open: boolean) => void
+  setShowHowTo: (show: boolean) => void
   addLetter: (letter: string) => void
   removeLetter: () => void
   submitGuess: () => void
   playAgain: () => void
   goToMenu: () => void
+}
+
+const SHOW_HOWTO_KEY = 'orbit-word:show-howto'
+
+function loadShowHowTo(): boolean {
+  try {
+    return localStorage.getItem(SHOW_HOWTO_KEY) !== 'false'
+  } catch {
+    return true
+  }
+}
+
+function saveShowHowTo(show: boolean) {
+  try {
+    localStorage.setItem(SHOW_HOWTO_KEY, String(show))
+  } catch {
+    // Storage can be unavailable (private mode); the toggle still works for this session.
+  }
+}
+
+function canType(s: { phase: Phase; helpOpen: boolean }) {
+  return s.phase === 'playing' && !s.helpOpen
 }
 
 function bestState(a: LetterState | undefined, b: LetterState): LetterState {
@@ -48,10 +75,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   startedAt: null,
   finishedAt: null,
   score: null,
+  helpOpen: false,
+  showHowTo: loadShowHowTo(),
 
-  startGame: (mode) => {
+  startGame: (mode, opts) => {
+    const showIntro = get().showHowTo && !opts?.skipHowTo
     set((s) => ({
-      phase: 'playing',
+      phase: showIntro ? 'howto' : 'playing',
+      helpOpen: false,
       mode,
       gameId: s.gameId + 1,
       answer: pickRandomWord(ANSWERS),
@@ -60,28 +91,40 @@ export const useGameStore = create<GameState>((set, get) => ({
       currentGuess: '',
       letterStates: {},
       shakeToken: 0,
-      startedAt: Date.now(),
+      startedAt: showIntro ? null : Date.now(),
       finishedAt: null,
       score: null,
     }))
   },
 
+  beginPlay: () => {
+    if (get().phase !== 'howto') return
+    set({ phase: 'playing', startedAt: Date.now() })
+  },
+
+  setHelpOpen: (open) => set({ helpOpen: open }),
+
+  setShowHowTo: (show) => {
+    saveShowHowTo(show)
+    set({ showHowTo: show })
+  },
+
   addLetter: (letter) => {
-    const { phase, currentGuess } = get()
-    if (phase !== 'playing') return
+    const { currentGuess } = get()
+    if (!canType(get())) return
     if (currentGuess.length >= WORD_LENGTH) return
     set({ currentGuess: currentGuess + letter.toLowerCase() })
   },
 
   removeLetter: () => {
-    const { phase, currentGuess } = get()
-    if (phase !== 'playing') return
+    const { currentGuess } = get()
+    if (!canType(get())) return
     set({ currentGuess: currentGuess.slice(0, -1) })
   },
 
   submitGuess: () => {
-    const { phase, currentGuess, answer, guesses, feedbacks, letterStates, mode, startedAt } = get()
-    if (phase !== 'playing') return
+    const { currentGuess, answer, guesses, feedbacks, letterStates, mode, startedAt } = get()
+    if (!canType(get())) return
     if (currentGuess.length !== WORD_LENGTH || !DICTIONARY.has(currentGuess)) {
       sfx.error()
       set((s) => ({ shakeToken: s.shakeToken + 1 }))
@@ -125,10 +168,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   playAgain: () => {
-    get().startGame(get().mode)
+    get().startGame(get().mode, { skipHowTo: true })
   },
 
   goToMenu: () => {
-    set({ phase: 'menu' })
+    set({ phase: 'menu', helpOpen: false })
   },
 }))

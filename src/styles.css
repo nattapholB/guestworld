@@ -125,6 +125,164 @@ body {
   line-height: 1.4;
 }
 
+.app-version {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+.howto-overlay {
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 6, 26, 0.45);
+  pointer-events: auto;
+}
+
+.howto-card {
+  width: min(460px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: rgba(10, 13, 30, 0.88);
+  border: 1px solid rgba(124, 211, 255, 0.25);
+  border-radius: 18px;
+  padding: 22px 26px;
+  backdrop-filter: blur(10px);
+}
+
+.howto-card h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 10px;
+  text-align: center;
+}
+
+.howto-card p,
+.howto-card li {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.howto-card b {
+  color: var(--text);
+}
+
+.howto-lead {
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+.howto-example {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.howto-tile {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.howto-example .howto-tile {
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+}
+
+.howto-legend {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.howto-legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.howto-mode,
+.howto-keys {
+  margin: 8px 0;
+}
+
+.howto-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(154, 163, 199, 0.18);
+  flex-wrap: wrap;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.toggle-track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(154, 163, 199, 0.25);
+  transition: background 0.18s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 0.18s ease;
+}
+
+.toggle input:checked + .toggle-track {
+  background: var(--accent);
+}
+
+.toggle input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(16px);
+}
+
+.toggle input:focus-visible + .toggle-track {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .hud {
   justify-content: flex-start;
   padding-top: 18px;

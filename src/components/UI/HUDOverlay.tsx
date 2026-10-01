@@ -9,6 +9,7 @@ export function HUDOverlay() {
   const startedAt = useGameStore((s) => s.startedAt)
   const finishedAt = useGameStore((s) => s.finishedAt)
   const goToMenu = useGameStore((s) => s.goToMenu)
+  const setHelpOpen = useGameStore((s) => s.setHelpOpen)
 
   const [now, setNow] = useState(Date.now())
 
@@ -18,7 +19,7 @@ export function HUDOverlay() {
     return () => clearInterval(id)
   }, [phase, mode])
 
-  const elapsed = startedAt ? ((finishedAt ?? now) - startedAt) / 1000 : 0
+  const elapsed = startedAt ? Math.max(0, (finishedAt ?? now) - startedAt) / 1000 : 0
 
   return (
     <div className="overlay hud">
@@ -34,6 +35,11 @@ export function HUDOverlay() {
             <span className="hud-label">Time</span>
             <span className="hud-value">{elapsed.toFixed(1)}s</span>
           </div>
+        )}
+        {phase === 'playing' && (
+          <button className="hud-menu-link" onClick={() => setHelpOpen(true)}>
+            How to play
+          </button>
         )}
         <button className="hud-menu-link" onClick={goToMenu}>
           Menu

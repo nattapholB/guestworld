@@ -17,6 +17,7 @@ export function MenuOverlay() {
           <p>Same 5 guesses, but speed earns you a bonus score.</p>
         </button>
       </div>
+      <span className="app-version">v{__APP_VERSION__}</span>
     </div>
   )
 }

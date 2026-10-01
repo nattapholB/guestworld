@@ -2,6 +2,7 @@ import { Scene } from './components/Scene'
 import { MenuOverlay } from './components/Menu/MenuOverlay'
 import { HUDOverlay } from './components/UI/HUDOverlay'
 import { EndOverlay } from './components/UI/EndOverlay'
+import { HowToPlay } from './components/UI/HowToPlay'
 import { useGameStore } from './game/store'
 import { useKeyboardInput } from './hooks/useKeyboardInput'
 
@@ -15,6 +16,7 @@ export function App() {
       {phase === 'menu' && <MenuOverlay />}
       {(phase === 'playing' || phase === 'won' || phase === 'lost') && <HUDOverlay />}
       <EndOverlay />
+      <HowToPlay />
     </div>
   )
 }
