@@ -1,4 +1,5 @@
 import { useGameStore } from '../../game/store'
+import { DEFINITIONS } from '../../game/definitions'
 
 export function EndOverlay() {
   const phase = useGameStore((s) => s.phase)
@@ -14,12 +15,20 @@ export function EndOverlay() {
   if (phase !== 'won' && phase !== 'lost') return null
 
   const elapsed = startedAt && finishedAt ? (finishedAt - startedAt) / 1000 : 0
+  const meaning = DEFINITIONS[answer]
 
   return (
     <div className="overlay end-overlay">
       <div className={`end-card ${phase === 'won' ? 'win' : 'lose'}`}>
         <h2>{phase === 'won' ? 'SOLVED' : 'OUT OF GUESSES'}</h2>
         {phase === 'lost' && <p>The word was {answer.toUpperCase()}</p>}
+        {meaning && (
+          <p className="end-meaning">
+            <span className="end-meaning-word">{answer.toUpperCase()}</span>
+            <span className="end-meaning-pos">{meaning.pos}</span>
+            <span className="end-meaning-def">{meaning.def}</span>
+          </p>
+        )}
         <div className="end-stats">
           <span>Guesses <b>{guessesUsed}</b></span>
           {mode === 'timer' && <span>Time <b>{elapsed.toFixed(1)}s</b></span>}
