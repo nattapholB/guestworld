@@ -1,8 +1,8 @@
-# Handoff Spec: Orbit Word (v0.3.0)
+# Handoff Spec: Orbit Word (v0.3.1)
 
 Figma: [Orbit word](https://www.figma.com/design/LbapGU4R0LtWZdl6OZpr53/Orbit-word). The **Screens** page has five 1280×800 frames. The **Components** page has the component library. Every color, spacing and radius value below exists as a Figma variable (collection **Orbit Word**, mode **Dark**), and every type style exists as a Figma text style with the same name.
 
-The Figma file was built *from* the shipped code, so the code is the source of truth. Where Figma can't show something (3D depth, lighting, motion), this document describes it.
+The Figma file was built *from* the shipped code, so the code is the source of truth. Where Figma can't show something (3D depth, lighting, motion), this document describes it. The v0.3.1 feedback colors below supersede the original Figma tokens; the Figma file still needs those color updates.
 
 | Frame | Link |
 |---|---|
@@ -58,8 +58,8 @@ There's no grid system. Layers stack inside a full-viewport `.app`:
 | `color/success` | `#2bd576` | Win title |
 | `color/tile/empty` | `#1e2650` | Empty board tile |
 | `color/tile/filled` | `#34408a` | Typed tile, not yet submitted |
-| `color/tile/correct` | `#2bd576` (emissive `#1fae5c`) | Right letter, right spot (glows through bloom) |
-| `color/tile/present` | `#a8872a` (emissive `#2e2406`) | Right letter, wrong spot (deliberately muted, no glow) |
+| `color/tile/correct` | `#1a8047` (emissive `#0b4424`) | Right letter, right spot (darkened in v0.3.1 for letter contrast) |
+| `color/tile/present` | `#886d22` (emissive `#2e2406`) | Right letter, wrong spot (deliberately muted, no glow) |
 | `color/tile/absent` | `#3a3f52` | Letter not in the word |
 | `color/key/default` | `#232a4d` | Key not used yet |
 | `color/surface/card` | `rgba(10,13,30,.72)` | End card |
@@ -181,7 +181,7 @@ The game is desktop-first by design (see `CONTEXT.md`). Mobile is playable but n
 | Win burst | Win | 220 accent points burst outward, with gravity of −1.4 u/s² | fade over 2.2s | linear opacity |
 | Answer reveal | Loss | The word rises from y −1.5 to 1.15 at z 1.2, letters bob ±0.05u | 1.2s rise | ease-out cubic |
 | Mode card / Button / Toggle | Hover / change | Transform, border, fill | 180ms | ease |
-| Bloom | Always | `intensity .9, luminanceThreshold .25, smoothing .4, mipmapBlur`. Only Correct tiles and keys pass the threshold | — | — |
+| Bloom | Always | `intensity .9, luminanceThreshold .25, smoothing .4, mipmapBlur`. Feedback materials use the darker v0.3.1 colors; rendered brightness also depends on lighting and emissive values | — | — |
 
 Sound effects are synthesized with Web Audio (`src/audio/sfx.ts`): key press, flip, error, win and lose. There's no music.
 
@@ -198,9 +198,9 @@ Known gaps (recommended next steps):
 2. **Results aren't announced to screen readers.** The board is WebGL. Add an `aria-live="polite"` region that announces each guess, e.g. "S absent, T absent, O present, N correct, E correct", plus win and loss messages.
 3. **The 3D keyboard can't be reached with Tab.** That's acceptable while physical keys work, but the canvas should have `aria-hidden="true"` and a visually hidden instruction.
 4. **The modal has no focus trap.** Tab can move focus behind the How to play card.
-5. **Contrast** (WCAG ratios measured against `#05061a`):
-   - **White letters on the green `color/tile/correct` tile: 1.79:1. This fails even the 3:1 minimum for large text, and it's the most important fix.** Darken the green to around `#1a8f4c` (about 4:1, still bright under bloom), or use dark letters (`#05061a`) on green tiles and keys.
-   - White on `color/tile/present`: 3.16:1. This passes for large text (board and example tiles), but it's marginal for the 13.6px small How to play tiles.
+5. **Contrast** (ratios use `#f4f6ff` letters against each flat tile color; other text uses the space background):
+   - Letters on `color/tile/correct` (`#1a8047`): 4.61:1 after the v0.3.1 fix.
+   - Letters on `color/tile/present` (`#886d22`): 4.57:1 after the v0.3.1 fix. Both flat-color combinations meet the 4.5:1 AA threshold for normal text. WebGL lighting, emissive materials and bloom affect the actual rendered contrast and require visual verification.
    - White on `color/tile/absent`: 9.67:1 (passes).
    - `color/text/dim` on the background: 8.06:1 (passes). The version label at 0.7 opacity drops to 4.36:1, just under the 4.5:1 AA minimum for 12px text, so drop the opacity or raise the size.
 6. **No reduced-motion support.** Respect `prefers-reduced-motion` by skipping the tile flip stagger, the shake, the parallax and the camera sway.
