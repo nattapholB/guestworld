@@ -3,6 +3,7 @@ import { ANSWERS, DICTIONARY } from './words'
 import { computeFeedback, pickRandomWord, MAX_GUESSES, WORD_LENGTH, type LetterState } from './logic'
 import { computeScore } from './scoring'
 import { sfx } from '../audio/sfx'
+import { useAppStore } from '../app/store'
 
 export type Phase = 'menu' | 'howto' | 'playing' | 'won' | 'lost'
 export type Mode = 'classic' | 'timer'
@@ -172,6 +173,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   goToMenu: () => {
-    set({ phase: 'menu', helpOpen: false })
+    set({ phase: 'menu', helpOpen: false, answer: '', guesses: [], feedbacks: [], currentGuess: '', letterStates: {}, startedAt: null, finishedAt: null, score: null })
+    useAppStore.getState().navigate('word-setup')
   },
 }))

@@ -1,4 +1,20 @@
-# Handoff Spec: Orbit Word (v0.3.1)
+# Handoff Spec: GuestWorld (v0.4.0)
+
+
+## v0.4.0 implementation addendum
+
+The application is the visual source of truth for the GuestWorld hub and Sudoku. The linked Figma file below remains an Orbit Word reference; it has not been extended for this feature.
+
+- **Game selection:** GuestWorld title and two image cards using the supplied Orbit Word and Sudoku illustrations. The whole card is a native button. Cards are side by side on desktop and stacked on narrow screens, with the full square covers and HTML labels visible.
+- **Setup:** Orbit Word offers Classic / Timer. Sudoku offers Novice / Beginner / Expert. Both reuse the text-card treatment and provide Back to games.
+- **Sudoku play:** steady 9×9 HTML grid with strong 3×3 borders, starting digits in primary text, player entries in accent, selected-cell and peer highlights, and small 3×3 candidate notes. A duplicate gets a danger outline, an exclamation mark, and an accessible cell label.
+- **Controls:** desktop number pad and Notes / Undo / Erase / Hint sit beside the board; on narrow screens they sit below it. Arrow keys move through the board, digits enter values, N toggles notes, and Backspace/Delete erases. The currently selected cell is the board's tab stop.
+- **HUD:** difficulty, elapsed time, How to play, Games. The clock pauses during help and the leave confirmation. It is not a countdown and does not award points.
+- **Dialogs:** shared native modal with focus wrapping/restoration and Escape dismissal. Sudoku help explains fixed starting digits, optional tools, unlimited corrections, and unsaved progress. Leaving asks “Leave puzzle? Your progress will be lost.”
+- **Completion:** the board remains visible with a result card showing difficulty, elapsed time, and hints used. Play Again reuses the difficulty; Change difficulty opens setup; Back to games opens the hub.
+- **Assets:** optimized WebP covers retain 1254×1254 resolution. Fonts are served locally, with licenses in `public/licenses/`. The existing QWERTY backspace key reads BACK to stay within the bundled board font's glyphs.
+
+The detailed Orbit Word measurements below remain useful for its game scene; its former landing screen is now the mode-setup screen. The v0.4.0 layout and interaction details above supersede conflicting older notes, including Google Fonts loading and the missing modal focus trap.
 
 Figma: [Orbit word](https://www.figma.com/design/LbapGU4R0LtWZdl6OZpr53/Orbit-word). The **Screens** page has five 1280×800 frames. The **Components** page has the component library. Every color, spacing and radius value below exists as a Figma variable (collection **Orbit Word**, mode **Dark**), and every type style exists as a Figma text style with the same name.
 

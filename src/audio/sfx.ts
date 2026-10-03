@@ -6,19 +6,25 @@ function getCtx(): AudioContext {
 }
 
 function tone(freq: number, duration: number, type: OscillatorType = 'sine', gainPeak = 0.15, delay = 0) {
-  const audioCtx = getCtx()
-  const osc = audioCtx.createOscillator()
-  const gain = audioCtx.createGain()
-  osc.type = type
-  osc.frequency.value = freq
-  const start = audioCtx.currentTime + delay
-  gain.gain.setValueAtTime(0, start)
-  gain.gain.linearRampToValueAtTime(gainPeak, start + 0.01)
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
-  osc.connect(gain)
-  gain.connect(audioCtx.destination)
-  osc.start(start)
-  osc.stop(start + duration + 0.05)
+  try {
+    const audioCtx = getCtx()
+    if (audioCtx.state === 'suspended') void audioCtx.resume().catch(() => {})
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    osc.type = type
+    osc.frequency.value = freq
+    const start = audioCtx.currentTime + delay
+    gain.gain.setValueAtTime(0, start)
+    gain.gain.linearRampToValueAtTime(gainPeak, start + 0.01)
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(start)
+    osc.stop(start + duration + 0.05)
+    osc.onended = () => { osc.disconnect(); gain.disconnect() }
+  } catch {
+    // Audio is optional: unavailable hardware or permissions must never block a move.
+  }
 }
 
 export const sfx = {

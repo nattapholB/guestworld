@@ -1,3 +1,4 @@
+import { BOARD_FONT } from '../../game/fonts'
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
@@ -117,7 +118,7 @@ export function Cube({
       </mesh>
       {letter && (
         <>
-          <Text
+          <Text font={BOARD_FONT}
             ref={frontTextRef}
             position={[0, 0, DEPTH / 2 + 0.02]}
             fontSize={0.42}
@@ -127,7 +128,7 @@ export function Cube({
           >
             {letter.toUpperCase()}
           </Text>
-          <Text
+          <Text font={BOARD_FONT}
             ref={backTextRef}
             position={[0, 0, -(DEPTH / 2 + 0.02)]}
             rotation={[Math.PI, 0, 0]}

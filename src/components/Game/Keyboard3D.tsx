@@ -1,3 +1,4 @@
+import { BOARD_FONT } from '../../game/fonts'
 import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
@@ -57,14 +58,14 @@ function Key({
         <boxGeometry args={[width, 0.56, 0.16]} />
         <meshStandardMaterial color={baseColor} emissive={emissive} emissiveIntensity={0.5} roughness={0.4} />
       </mesh>
-      <Text
+      <Text font={BOARD_FONT}
         position={[0, 0, 0.1]}
         fontSize={label.length > 1 ? 0.16 : 0.24}
         color="#f4f6ff"
         anchorX="center"
         anchorY="middle"
       >
-        {label === 'BACK' ? '⌫' : label === 'ENTER' ? 'ENTER' : label}
+        {label === 'BACK' ? 'BACK' : label === 'ENTER' ? 'ENTER' : label}
       </Text>
     </group>
   )

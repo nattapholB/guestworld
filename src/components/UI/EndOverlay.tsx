@@ -39,7 +39,7 @@ export function EndOverlay() {
             Play Again
           </button>
           <button className="btn secondary" onClick={goToMenu}>
-            Menu
+            Modes
           </button>
         </div>
       </div>

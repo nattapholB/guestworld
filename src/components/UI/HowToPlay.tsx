@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Modal } from './Modal'
 import { useGameStore } from '../../game/store'
 import { COLORS } from '../../game/theme'
 import { MAX_GUESSES, WORD_LENGTH, type LetterState } from '../../game/logic'
@@ -32,25 +32,11 @@ export function HowToPlay() {
   const open = isIntro || helpOpen
   const close = isIntro ? beginPlay : () => setHelpOpen(false)
 
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      // Capture phase + stopImmediatePropagation so the game's Enter handler can't also submit a guess.
-      e.stopImmediatePropagation()
-      if (e.key === 'Enter' || e.key === 'Escape') {
-        e.preventDefault()
-        close()
-      }
-    }
-    window.addEventListener('keydown', handler, true)
-    return () => window.removeEventListener('keydown', handler, true)
-  }, [open, close])
-
   if (!open) return null
 
   return (
-    <div className="overlay howto-overlay">
-      <div className="howto-card" role="dialog" aria-modal="true" aria-labelledby="howto-title">
+    <Modal titleId="howto-title" onClose={close}>
+      <div className="howto-card">
         <h2 id="howto-title">HOW TO PLAY</h2>
         <p className="howto-lead">
           Find the hidden {WORD_LENGTH}-letter word in {MAX_GUESSES} guesses. Every guess must be a real English word.
@@ -104,11 +90,11 @@ export function HowToPlay() {
             </span>
             Show before each game
           </label>
-          <button className="btn" onClick={close} autoFocus>
+          <button className="btn" onClick={close} data-initial-focus>
             {isIntro ? 'Start' : 'Back to game'}
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

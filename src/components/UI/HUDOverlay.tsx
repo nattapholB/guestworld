@@ -42,7 +42,7 @@ export function HUDOverlay() {
           </button>
         )}
         <button className="hud-menu-link" onClick={goToMenu}>
-          Menu
+          Modes
         </button>
       </div>
     </div>

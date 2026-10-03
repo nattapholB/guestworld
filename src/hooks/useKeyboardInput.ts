@@ -12,7 +12,11 @@ export function useKeyboardInput() {
     if (phase !== 'playing') return
 
     const handler = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || useGameStore.getState().helpOpen) return
+      const target = e.target as HTMLElement
+      if (target.closest('dialog, input, textarea, select, [contenteditable=true]')) return
+      if (e.key === 'Enter' && target.closest('button, a')) return
+      if (e.key === 'Enter' || e.key === 'Backspace' || /^[a-zA-Z]$/.test(e.key)) e.preventDefault()
       if (e.key === 'Enter') {
         submitGuess()
       } else if (e.key === 'Backspace') {

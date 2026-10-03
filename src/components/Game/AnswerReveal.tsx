@@ -1,3 +1,4 @@
+import { BOARD_FONT } from '../../game/fonts'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
@@ -36,7 +37,7 @@ export function AnswerReveal({ answer }: { answer: string }) {
       </mesh>
       <group ref={lettersRef}>
         {letters.map((letter, i) => (
-          <Text
+          <Text font={BOARD_FONT}
             key={i}
             position={[i * SPACING - width / 2, 0, 0]}
             fontSize={0.72}
