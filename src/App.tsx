@@ -9,6 +9,8 @@ import { useKeyboardInput } from './hooks/useKeyboardInput'
 import { useAppStore } from './app/store'
 import { SudokuSetup } from './games/sudoku/SudokuSetup'
 import { SudokuGame } from './games/sudoku/SudokuGame'
+import { CrosswordSetup } from './games/crossword/CrosswordSetup'
+import { CrosswordGame } from './games/crossword/CrosswordGame'
 import { SceneBoundary } from './components/SceneBoundary'
 
 const Scene = lazy(() => import('./components/Scene').then(module => ({ default: module.Scene })))
@@ -22,12 +24,14 @@ export function App() {
   const phase = useGameStore(s => s.phase)
   return <div className={`app screen-${screen}`}>
     <div className="scene-layer" aria-hidden="true"><SceneBoundary><Suspense fallback={null}>
-      <Scene wordVisible={screen === 'word'} finished={screen === 'word' && (phase === 'won' || phase === 'lost')} steady={screen === 'sudoku'} />
+      <Scene wordVisible={screen === 'word'} finished={screen === 'word' && (phase === 'won' || phase === 'lost')} steady={screen === 'sudoku' || screen === 'crossword'} />
     </Suspense></SceneBoundary></div>
     {screen === 'games' && <GameSelection />}
     {screen === 'word-setup' && <MenuOverlay />}
     {screen === 'word' && <WordGame />}
     {screen === 'sudoku-setup' && <SudokuSetup />}
     {screen === 'sudoku' && <SudokuGame />}
+    {screen === 'crossword-setup' && <CrosswordSetup />}
+    {screen === 'crossword' && <CrosswordGame />}
   </div>
 }

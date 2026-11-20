@@ -21,7 +21,7 @@ body,
 }
 
 body {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Space Grotesk', 'Noto Sans Thai', system-ui, sans-serif;
   color: var(--text);
 }
 
@@ -458,7 +458,7 @@ button:disabled { opacity: .35; cursor: not-allowed; }
 .selection-heading { text-align: center; }
 .selection-heading .menu-title { font-size: clamp(2rem, 5vw, 3.6rem); }
 .selection-heading .menu-subtitle { margin: 14px 0 0; font-size: .95rem; line-height: 1.5; }
-.game-cards { width: min(100%, 696px); display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
+.game-cards { width: min(100%, 1044px); display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
 .game-card { display: flex; flex-direction: column; padding: 0; text-align: left; font: inherit; color: var(--text); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; cursor: pointer; background: rgba(10,13,30,.9); box-shadow: 0 16px 50px rgba(0,0,0,.3); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
 .game-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 16px 48px rgba(124,211,255,.16); }
 .game-card img { width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; display: block; }
@@ -467,7 +467,7 @@ button:disabled { opacity: .35; cursor: not-allowed; }
 .game-card-title > span { color: var(--accent); font-family: inherit; font-size: 1.35rem; }
 .game-card-meta { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 13px; margin-top: 5px; font-size: .55rem; letter-spacing: .12em; color: var(--accent); }
 .game-card-meta > span { color: var(--text-dim); }
-.selection-footer { width: min(100%, 696px); display: flex; justify-content: space-between; gap: 24px; color: var(--text-dim); font-size: .72rem; }
+.selection-footer { width: min(100%, 1044px); display: flex; justify-content: space-between; gap: 24px; color: var(--text-dim); font-size: .72rem; }
 .back-link { position: absolute; top: 32px; left: 32px; background: none; border: 0; padding: 8px 0; color: var(--text-dim); font: inherit; font-size: .82rem; cursor: pointer; }
 .back-link:hover { color: var(--accent); }
 .setup-page { gap: 38px; padding-top: 100px; }
@@ -549,17 +549,85 @@ button:disabled { opacity: .35; cursor: not-allowed; }
 .is-complete { border-color: var(--accent); }
 .is-complete .sudoku-cell { background: #112535; }
 
+/* Setup resume banner (reusable across Crossword & future Sudoku persistence) */
+.resume-banner { width: min(100%, 820px); display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 22px; background: rgba(20, 26, 51, 0.78); border: 1px solid var(--line); border-radius: 16px; backdrop-filter: blur(8px); }
+.resume-banner-info .eyebrow { margin-bottom: 6px; }
+.resume-banner-title { margin: 0; font-size: .92rem; color: var(--text); font-variant-numeric: tabular-nums; }
+.resume-banner-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* Crossword play layout */
+.crossword-layout { grid-template-columns: minmax(0, 504px) minmax(260px, 340px); }
+.crossword-active-clue { background: rgba(20, 26, 51, 0.72); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; backdrop-filter: blur(8px); }
+.cw-active-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cw-active-nav { display: flex; align-items: center; gap: 6px; }
+.cw-step-btn, .cw-dir-badge { border: 1px solid rgba(154,163,199,.25); background: rgba(10,13,30,.65); color: var(--text); border-radius: 8px; cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s; }
+.cw-step-btn { width: 28px; height: 28px; font-size: 1rem; line-height: 1; display: grid; place-items: center; color: var(--text-dim); }
+.cw-dir-badge { padding: 5px 10px; font-family: Orbitron, sans-serif; font-size: .68rem; font-weight: 700; letter-spacing: .06em; color: var(--accent); }
+.cw-step-btn:not(:disabled):hover, .cw-dir-badge:not(:disabled):hover { border-color: var(--accent); background: rgba(124,211,255,.14); }
+.cw-lang-toggle { display: inline-flex; padding: 2px; border-radius: 8px; border: 1px solid var(--line); background: rgba(10,13,30,.75); }
+.cw-lang-btn { border: 0; background: transparent; color: var(--text-dim); font: inherit; font-size: .72rem; font-weight: 600; padding: 4px 9px; border-radius: 6px; cursor: pointer; transition: background .15s, color .15s; }
+.cw-lang-btn.active { background: rgba(124,211,255,.22); color: var(--text); }
+.cw-active-text { margin: 10px 0 0; font-size: .92rem; line-height: 1.45; color: var(--text); }
+
+.crossword-board { width: 100%; aspect-ratio: 1; display: grid; grid-template-rows: repeat(var(--cw-size, 5), minmax(0, 1fr)); border: 2px solid rgba(124,211,255,.7); border-radius: 8px; overflow: hidden; box-shadow: 0 0 40px rgba(124,211,255,.07); background: #040614; }
+.crossword-row { display: grid; grid-template-columns: repeat(var(--cw-size, 5), minmax(0, 1fr)); min-height: 0; }
+.cw-block { background: #040614; border-right: 1px solid rgba(124,211,255,.09); border-bottom: 1px solid rgba(124,211,255,.09); }
+.cw-cell { position: relative; min-width: 0; min-height: 0; padding: 0; border: 0; border-right: 1px solid rgba(154,163,199,.22); border-bottom: 1px solid rgba(154,163,199,.22); border-radius: 0; background: rgba(16,22,48,.96); color: var(--text); font-family: Orbitron, sans-serif; font-weight: 700; font-size: clamp(1.1rem, 3.8vw, 1.7rem); cursor: pointer; display: grid; place-items: center; }
+.crossword-board[style*="--cw-size: 7"] .cw-cell { font-size: clamp(.95rem, 2.8vw, 1.38rem); }
+.crossword-board[style*="--cw-size: 9"] .cw-cell { font-size: clamp(.82rem, 2.3vw, 1.15rem); }
+.cw-num { position: absolute; top: 3px; left: 4px; font-family: 'Space Grotesk', sans-serif; font-size: clamp(.48rem, .95vw, .64rem); font-weight: 600; color: var(--text-dim); line-height: 1; pointer-events: none; }
+.cw-letter { line-height: 1; pointer-events: none; }
+.cw-cell.in-word { background: #162749; }
+.cw-cell.revealed { color: var(--accent); }
+.cw-cell.selected { background: #254b68; box-shadow: inset 0 0 0 2px var(--accent); }
+.cw-cell.conflict { color: #ff92a5; background: #382032; box-shadow: inset 0 0 0 1px var(--danger); }
+.cw-cell.conflict.selected { box-shadow: inset 0 0 0 2px var(--accent); }
+.cw-cell:focus-visible { outline: 0; box-shadow: inset 0 0 0 3px var(--accent); }
+.is-complete .cw-cell { background: #112535; color: var(--accent); }
+.board-status.has-notice { color: var(--accent); }
+
+.cw-control-heading { margin-bottom: 16px; }
+.cw-heading-right { display: flex; align-items: center; gap: 10px; }
+.cw-kbd-toggle { border: 1px solid rgba(154,163,199,.28); background: rgba(20,26,51,.7); color: var(--text-dim); border-radius: 8px; padding: 4px 8px; font: inherit; font-size: .65rem; cursor: pointer; }
+.cw-kbd-toggle.active, .cw-kbd-toggle:hover { border-color: var(--accent); color: var(--text); background: rgba(124,211,255,.16); }
+
+.crossword-clues { margin-top: 20px; max-height: 380px; overflow-y: auto; display: grid; gap: 16px; padding-right: 4px; }
+.cw-clue-group h3 { margin: 0 0 8px; }
+.cw-clue-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.cw-clue-btn { width: 100%; display: grid; grid-template-columns: 22px 1fr auto; align-items: baseline; gap: 8px; text-align: left; padding: 7px 10px; border: 1px solid transparent; border-radius: 8px; background: rgba(10,13,30,.45); color: var(--text-dim); font: inherit; font-size: .78rem; line-height: 1.4; cursor: pointer; transition: background .14s, border-color .14s, color .14s; }
+.cw-clue-btn:not(:disabled):hover { background: rgba(20,26,51,.85); border-color: rgba(124,211,255,.25); color: var(--text); }
+.cw-clue-btn.active { background: rgba(124,211,255,.16); border-color: var(--accent); color: var(--text); }
+.cw-clue-btn.filled:not(.active) { opacity: .62; }
+.cw-clue-num { font-family: Orbitron, sans-serif; font-size: .7rem; font-weight: 700; color: var(--accent); }
+.cw-clue-len { font-size: .68rem; opacity: .7; white-space: nowrap; }
+
+.crossword-keyboard { display: none; gap: 6px; margin-top: 16px; }
+.crossword-keyboard.is-open { display: grid; }
+.cw-key-row { display: flex; justify-content: center; gap: 5px; }
+.cw-key { flex: 1; max-width: 44px; min-width: 0; height: 42px; font-size: .82rem; border-radius: 8px; padding: 0; }
+.cw-key-wide { flex: 1.45; max-width: 64px; font-size: .9rem; }
+
 @media (max-width: 900px) {
+  .game-cards { grid-template-columns: repeat(2, minmax(0,1fr)); max-width: 696px; }
+  .selection-footer { max-width: 696px; }
   .difficulty-cards { grid-template-columns: repeat(3,minmax(0,1fr)); width: 100%; max-width: 800px; }
   .sudoku-page { padding: 28px 24px; }
   .sudoku-layout { gap: 28px; grid-template-columns: minmax(0,1fr) 240px; }
+  .crossword-layout { grid-template-columns: minmax(0,1fr) 272px; }
   .sudoku-header { flex-direction: column; align-items: flex-start; gap: 20px; margin-bottom: 28px; }
+}
+@media (max-width: 768px) {
+  .crossword-layout { grid-template-columns: minmax(0,1fr); gap: 24px; }
+  .crossword-keyboard { display: grid; }
+  .cw-kbd-toggle { display: none; }
+  .crossword-clues { max-height: 280px; }
 }
 @media (max-width: 640px) {
   .selection-page { padding: 36px 24px 24px; gap: 28px; }
   .selection-heading .menu-subtitle { font-size: .84rem; }
   .game-cards { grid-template-columns: minmax(0,1fr); max-width: 340px; }
   .selection-footer { max-width: 340px; font-size: .65rem; }
+  .resume-banner { flex-direction: column; align-items: flex-start; width: min(100%, 340px); }
   .setup-page { padding-top: 104px; }
   .back-link { top: 24px; left: 24px; }
   .mode-buttons, .difficulty-cards { grid-template-columns: minmax(0,1fr); width: min(100%,340px); }
@@ -574,6 +642,7 @@ button:disabled { opacity: .35; cursor: not-allowed; }
   .board-caption { font-size: .62rem; }
   .number-pad { grid-template-columns: repeat(9,minmax(0,1fr)); gap: 5px; }
   .digit-key { height: 44px; font-size: .9rem; border-radius: 6px; }
+  .cw-key { height: 40px; font-size: .78rem; }
   .control-heading { margin-bottom: 14px; }
   .sudoku-tools { margin-top: 16px; }
   .sudoku-tip, .keyboard-guide { display: none; }

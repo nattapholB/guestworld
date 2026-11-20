@@ -1,5 +1,6 @@
 import wordCover from '../../assets/games/orbit-word-cover.webp'
 import sudokuCover from '../../assets/games/sudoku-cover.webp'
+import crosswordCover from '../../assets/games/crossword-cover.jpg'
 import { useAppStore } from '../../app/store'
 
 export function GameSelection() {
@@ -9,7 +10,7 @@ export function GameSelection() {
       <header className="selection-heading">
         <p className="eyebrow">A LITTLE SPACE TO THINK</p>
         <h1 className="menu-title">GUESTWORLD</h1>
-        <p className="menu-subtitle">Two worlds. One curious mind. Choose your next puzzle.</p>
+        <p className="menu-subtitle">Three worlds. One curious mind. Choose your next puzzle.</p>
       </header>
       <div className="game-cards">
         <button className="game-card" aria-labelledby="word-card-title" aria-describedby="word-card-description" onClick={() => navigate('word-setup')}>
@@ -26,6 +27,14 @@ export function GameSelection() {
             <span className="game-card-title" id="sudoku-card-title">Sudoku <span aria-hidden="true">↗</span></span>
             <span id="sudoku-card-description">Fill the grid, one deduction at a time.</span>
             <span className="game-card-meta">NUMBER PUZZLE <span>3 DIFFICULTIES</span></span>
+          </span>
+        </button>
+        <button className="game-card" aria-labelledby="crossword-card-title" aria-describedby="crossword-card-description" onClick={() => navigate('crossword-setup')}>
+          <img src={crosswordCover} width={1024} height={1024} alt="" decoding="async" />
+          <span className="game-card-caption">
+            <span className="game-card-title" id="crossword-card-title">Crossword <span aria-hidden="true">↗</span></span>
+            <span id="crossword-card-description">Weave words together, one clue at a time.</span>
+            <span className="game-card-meta">WORD GRID <span>3 SIZES · EN/TH</span></span>
           </span>
         </button>
       </div>
