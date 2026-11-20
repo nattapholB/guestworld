@@ -1,4 +1,16 @@
-# Handoff Spec: GuestWorld (v0.6.0)
+# Handoff Spec: GuestWorld (v0.7.0)
+
+
+## v0.7.0 implementation addendum
+
+Adds offline PWA support to the hub and mobile standalone polish; gameplay screens are unchanged.
+
+- **Install App button:** `.pwa-install-btn` pill (Orbitron, accent border, hover lift) in the hub footer's `.selection-footer-meta`, next to the version label. Shown only when the browser offers a native install prompt and the app is not already standalone; clicking opens the native prompt.
+- **iOS Safari guide:** On iPhone/iPad Safari (no native prompt) the same button opens a `<Modal>` titled `Add to Home Screen` (eyebrow `INSTALL ON IPHONE / IPAD`) with three steps: tap `Share`, choose `Add to Home Screen`, tap `Add`; one `Got it` button receives initial focus.
+- **Offline pill:** `.pwa-offline-pill` (amber dot + `Offline`, `role="status"`) appears in the hub footer while `navigator.onLine` is false.
+- **Update toast:** `PwaUpdateToast` shows a non-blocking, fixed bottom-right glass card (`.pwa-update-toast`, full-width inset on ≤640px) with `Update available`, `Reload when ready for the latest version.`, and `Reload` / `Later` buttons. It never interrupts a round.
+- **App icons:** cosmic pixel-art planet-and-ring with a gold-orange 3D `GW` on `#05061a`: `icon-192.png`, `icon-512.png`, a maskable `icon-maskable-512.png` with a centered safe-zone emblem, `apple-touch-icon.png` (180×180, opaque), `favicon-32.png`, and `favicon.ico`.
+- **Standalone/mobile polish:** `viewport-fit=cover` with `env(safe-area-inset-*)` padding on the hub, setup, HUD, Sudoku, and Crossword screens; `touch-action: manipulation` on buttons and puzzle cells to avoid double-tap zoom delay; `overscroll-behavior-y: none` on `html, body` to stop pull-to-refresh bounce; theme and status-bar color `#05061a`.
 
 
 ## v0.6.0 implementation addendum

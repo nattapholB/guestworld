@@ -1,7 +1,7 @@
 # GuestWorld — Context
 
 ## Overview
-A browser-based puzzle project with a cosmic visual theme. GuestWorld contains Orbit Word, Sudoku, and Crossword behind an illustrated game-selection landing page. Version v0.4.0 added the game hub and Sudoku; version v0.5.0 added Crossword, offline bilingual (`EN / ไทย`) clues, and shared `localStorage` persistence; version v0.6.0 adds local auto-save and resume for Sudoku using the shared persistence helper. Figma prototype creation was skipped in favor of reusing the existing UI.
+A browser-based puzzle project with a cosmic visual theme. GuestWorld contains Orbit Word, Sudoku, and Crossword behind an illustrated game-selection landing page. Version v0.4.0 added the game hub and Sudoku; version v0.5.0 added Crossword, offline bilingual (`EN / ไทย`) clues, and shared `localStorage` persistence; version v0.6.0 added local auto-save and resume for Sudoku using the shared persistence helper; version v0.7.0 adds offline PWA support (installable app, precached shell, update toast) and mobile standalone polish. Figma prototype creation was skipped in favor of reusing the existing UI.
 
 ## Glossary
 - **Feedback**: Per-letter result shown after each guess — Green (right letter, right position), Yellow (right letter, wrong position), Gray (letter not in the word). Applied per letter, not per word.
@@ -111,6 +111,18 @@ See [Game selection and Sudoku](docs/plans/0001-game-selection-sudoku.md) for th
 - Clues default to English (`EN`) and can be toggled to Thai (`ไทย`) offline at any time via the active clue header; Thai glyphs use bundled Fontsource Noto Sans Thai.
 - Uses the shared cosmic theme, steady board presentation, elapsed-time clock (paused during help), Check / Erase / Hint / Reveal Word tools, and automatic completion without a mistake limit.
 - **Persistence**: Unfinished Crossword rounds and clue-language / help preferences save automatically via the reusable versioned helper in `src/app/storage.ts`, powering the Resume banner on Crossword setup (shared with Sudoku as of v0.6.0).
+
+## Offline PWA (v0.7.0)
+
+- **Plugin:** `vite-plugin-pwa` in `vite.config.ts` (`registerType: 'prompt'`, `injectRegister: false`, generateSW) emits `manifest.webmanifest`, `sw.js`, and a `workbox-*.js` runtime.
+- **Precache:** Workbox precaches all `js/css/html/ico/png/svg/webp/jpg/woff/woff2/txt` build output (42 entries, ~3.8 MiB at v0.7.0). `maximumFileSizeToCacheInBytes` is 3 MiB so the lazy ~1.01 MB `assets/Scene-*.js` 3D chunk is cached and Orbit Word works offline. `navigateFallback: 'index.html'`, `cleanupOutdatedCaches`, and `clientsClaim` are enabled.
+- **GitHub Pages subpath:** `base: './'`, and the manifest `id`, `start_url`, and `scope` are `./`; icon `src` values and `index.html` icon links are relative, so the app works under `/guestworld/`.
+- **Client code:** `src/app/pwa.ts` (zustand `usePwaStore`: online state, standalone detection, deferred `beforeinstallprompt`, iOS Safari detection, `getInstallMode`); `src/components/UI/PwaUpdateToast.tsx` (`useRegisterSW`, bottom `Update available` toast with `Reload` / `Later`, update check when the tab becomes visible); `src/components/Menu/GameSelection.tsx` footer (`Install App` button, iOS Safari `Add to Home Screen` modal, `Offline` pill).
+- **Install affordance:** hidden when already standalone; native prompt when the browser offers one; iOS Safari guide otherwise; hidden in all other cases.
+- **Assets and metadata:** `public/icons/` (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `favicon-32.png`), `public/apple-touch-icon.png` (180×180), `public/favicon.ico`; `index.html` adds `viewport-fit=cover`, `theme-color` `#05061a`, and Apple web-app meta tags.
+- **Mobile polish:** `src/styles.css` applies `env(safe-area-inset-*)` padding, `touch-action: manipulation` on buttons and puzzle cells, and `overscroll-behavior-y: none`.
+- **Tests:** `tests/pwa.test.ts` (standalone / iOS Safari / install-mode logic, `promptInstall`, and `index.html` contract). `npm test` runs 32 tests.
+- Gameplay stays fully client-side; saved rounds and preferences continue to live in `localStorage`, which the service worker does not touch.
 
 ### Flagged ambiguities
 

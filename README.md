@@ -5,6 +5,7 @@ A cosmic puzzle collection built with React, TypeScript, Zustand, and React Thre
 - **Orbit Word:** five-letter words, five guesses, Classic and Timer modes.
 - **Sudoku:** 9×9 boards in Novice, Beginner, and Expert; notes, undo, erase, optional hints, and elapsed time. No mistake limit; local auto-save and resume.
 - **Crossword:** Mini (5×5), Classic (7×7), and Grand (9×9) grids with 4–7 letter words, instant EN / ไทย clue toggle, Check / Erase / Hint / Reveal Word tools, and local auto-save.
+- **Offline PWA (v0.7.0):** installable via `Install App` (or Safari's Share → Add to Home Screen on iPhone/iPad). After the first visit all three games, including the 3D Orbit Word scene, play offline.
 
 ## Development
 
@@ -22,7 +23,7 @@ The production build goes to `dist/`. Relative asset URLs support the GitHub Pag
 
 ## Validation
 
-`npm test` runs the Sudoku/Word (`tests/sudoku.test.ts`) and Crossword/storage (`tests/crossword.test.ts`) rule, content, generator, lifecycle, and timer checks using Node's test runner through tsx.
+`npm test` runs the Sudoku/Word (`tests/sudoku.test.ts`), Crossword/storage (`tests/crossword.test.ts`), and PWA (`tests/pwa.test.ts`) rule, content, generator, lifecycle, timer, install-detection, and `index.html` metadata checks using Node's test runner through tsx (32 tests).
 
 For the Orbit Word and Sudoku browser walkthrough, install Python Playwright and Chromium, start Vite on port 5173, then run:
 
@@ -47,16 +48,17 @@ Crossword puzzles are generated live in the browser across 56 distinct validated
 
 ## Project map
 
-- `src/app/`: game selection, navigation state, and shared versioned `localStorage` persistence (`storage.ts`).
+- `src/app/`: game selection, navigation state, shared versioned `localStorage` persistence (`storage.ts`), and PWA install/online state (`pwa.ts`).
 - `src/game/`: existing Orbit Word rules, state, words, and shared theme.
 - `src/games/sudoku/`: Sudoku content, rules, state, and UI.
 - `src/games/crossword/`: Crossword bilingual lexicon, 56 grid patterns, CSP generator, rules, persistent store, and UI.
 - `src/components/`: shared presentation and the 3D Word scene.
 - `src/assets/`: web-ready covers and fonts.
 - `docs/plans/0001-game-selection-sudoku.md`: decisions and implementation record.
+- `docs/releases/v0.7.0.md`: v0.7.0 release notes.
 - `docs/releases/v0.6.0.md`: v0.6.0 release notes.
 - `docs/releases/v0.5.0.md`: v0.5.0 release notes.
 - `docs/design/handoff.md`: UI handoff.
 - `CONTEXT.md`: product language and behavior.
 
-The supplied cover originals remain in `output/imagegen/`; the app imports optimized cover copies (`src/assets/games/`). Orbitron, Space Grotesk, and Noto Sans Thai come from Fontsource packages. Roboto's Latin WOFF is vendored from Fontsource Roboto 5.3.0. Font licenses ship under `public/licenses/`.
+The supplied cover originals remain in `output/imagegen/`; the app imports optimized cover copies (`src/assets/games/`). Orbitron, Space Grotesk, and Noto Sans Thai come from Fontsource packages. Roboto's Latin WOFF is vendored from Fontsource Roboto 5.3.0. Font licenses ship under `public/licenses/`. PWA and app icons (`public/icons/`, `public/apple-touch-icon.png`, `public/favicon.ico`) are served from `public/`.
