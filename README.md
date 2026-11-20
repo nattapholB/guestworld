@@ -3,7 +3,7 @@
 A cosmic puzzle collection built with React, TypeScript, Zustand, and React Three Fiber.
 
 - **Orbit Word:** five-letter words, five guesses, Classic and Timer modes.
-- **Sudoku:** 9×9 boards in Novice, Beginner, and Expert; notes, undo, erase, optional hints, and elapsed time. No mistake limit or saved progress.
+- **Sudoku:** 9×9 boards in Novice, Beginner, and Expert; notes, undo, erase, optional hints, and elapsed time. No mistake limit; local auto-save and resume.
 - **Crossword:** Mini (5×5), Classic (7×7), and Grand (9×9) grids with 4–7 letter words, instant EN / ไทย clue toggle, Check / Erase / Hint / Reveal Word tools, and local auto-save.
 
 ## Development
@@ -54,6 +54,7 @@ Crossword puzzles are generated live in the browser across 56 distinct validated
 - `src/components/`: shared presentation and the 3D Word scene.
 - `src/assets/`: web-ready covers and fonts.
 - `docs/plans/0001-game-selection-sudoku.md`: decisions and implementation record.
+- `docs/releases/v0.6.0.md`: v0.6.0 release notes.
 - `docs/releases/v0.5.0.md`: v0.5.0 release notes.
 - `docs/design/handoff.md`: UI handoff.
 - `CONTEXT.md`: product language and behavior.

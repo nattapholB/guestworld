@@ -1,7 +1,7 @@
 # GuestWorld — Context
 
 ## Overview
-A browser-based puzzle project with a cosmic visual theme. GuestWorld contains Orbit Word, Sudoku, and Crossword behind an illustrated game-selection landing page. Version v0.4.0 added the game hub and Sudoku; version v0.5.0 adds Crossword, offline bilingual (`EN / ไทย`) clues, and shared `localStorage` persistence. Figma prototype creation was skipped in favor of reusing the existing UI.
+A browser-based puzzle project with a cosmic visual theme. GuestWorld contains Orbit Word, Sudoku, and Crossword behind an illustrated game-selection landing page. Version v0.4.0 added the game hub and Sudoku; version v0.5.0 added Crossword, offline bilingual (`EN / ไทย`) clues, and shared `localStorage` persistence; version v0.6.0 adds local auto-save and resume for Sudoku using the shared persistence helper. Figma prototype creation was skipped in favor of reusing the existing UI.
 
 ## Glossary
 - **Feedback**: Per-letter result shown after each guess — Green (right letter, right position), Yellow (right letter, wrong position), Gray (letter not in the word). Applied per letter, not per word.
@@ -85,8 +85,8 @@ _Avoid_: Mode, which currently describes Orbit Word's Classic and Timer choices.
 - Sudoku has an elapsed-time clock, with no countdown, score, or separate timer mode.
 - Start the Sudoku clock when the pre-game introduction closes; pause it while help is open.
 - The Sudoku completion summary shows difficulty, elapsed time, and hints used.
-- No saved Sudoku progress or Resume puzzle flow in this version. Leaving the game or reloading discards the current puzzle.
-- Leaving an unfinished Sudoku through in-game navigation opens “Leave puzzle? Your progress will be lost.” with Keep playing and Leave puzzle actions; pause the clock while the dialog is open.
+- As of v0.6.0, unfinished Sudoku rounds auto-save in browser `localStorage` (`guestworld:sudoku:round:v1` via `src/app/storage.ts`) and surface a Resume banner (`Resume puzzle` / `Discard`) on Sudoku setup; selecting a difficulty while a saved puzzle exists opens an overwrite confirmation modal before replacing it. (Previously session-only in v0.4.0–v0.5.0.)
+- Leaving an unfinished Sudoku via `Games` or hiding/closing the tab (`pagehide` / `visibilitychange`) saves the round automatically and returns to the hub; the v0.4.0 “Leave puzzle? Your progress will be lost.” confirmation dialog is retired in v0.6.0.
 - Sudoku uses a flat, front-facing, steady 9×9 board with clear 3×3 box borders, readable candidate notes, and selected-cell highlights.
 - Reuse the cosmic background, typography, colors, HUD, buttons, and key styling across both games; Sudoku cells do not use Orbit Word’s floating-cube presentation.
 
@@ -102,19 +102,19 @@ See [Game selection and Sudoku](docs/plans/0001-game-selection-sudoku.md) for th
 - Each Sudoku difficulty has 20 bundled, uniquely solvable puzzles. Difficulty is verified by a logical grader: naked singles for Novice, hidden singles and locked candidates for Beginner, and naked pairs or X-Wing when required for Expert.
 - Sudoku completes automatically when the board is full and valid. Play Again starts the same difficulty without another introduction; Change difficulty returns to setup; Games returns to the hub.
 - Notes are manual candidate digits. Entering a value clears that cell’s notes; peer notes remain unchanged. Undo restores edits and notes, but does not refund hints used.
-- The Sudoku help preference lasts only for the current session. There is no saved Sudoku puzzle or history.
-- The Sudoku clock pauses for help and leave confirmation; time in a background tab otherwise continues to count.
+- As of v0.6.0, Sudoku persists the latest unfinished round (`guestworld:sudoku:round:v1`: puzzle ID, difficulty, board entries, candidate notes, selected cell, hints used, and elapsed time) and the `Show before each puzzle` help preference (`guestworld:sudoku:prefs:v1`) via `src/app/storage.ts`, falling back to session-only if storage is unavailable or corrupted. Undo history and active Notes mode are not persisted and reset (`history: []`, `notesMode: false`) on resume; completing or discarding a puzzle clears the saved round.
+- The Sudoku clock pauses while the pre-game introduction or help dialog is open; exiting via `Games` or hiding/closing the tab (`pagehide` / `visibilitychange`) flushes the saved board state and elapsed time.
 
 ## Crossword
 
 - **Crossword** is the third game on the GuestWorld hub, offering three board sizes (**Mini** 5×5, **Classic** 7×7, **Grand** 9×9) with 4–7 letter everyday English answers across 56 distinct validated grid patterns solved randomly on each new puzzle.
 - Clues default to English (`EN`) and can be toggled to Thai (`ไทย`) offline at any time via the active clue header; Thai glyphs use bundled Fontsource Noto Sans Thai.
 - Uses the shared cosmic theme, steady board presentation, elapsed-time clock (paused during help), Check / Erase / Hint / Reveal Word tools, and automatic completion without a mistake limit.
-- **Persistence**: Unfinished Crossword rounds and clue-language / help preferences save automatically via the reusable versioned helper in `src/app/storage.ts`, powering the Resume banner on Crossword setup and enabling future Sudoku persistence without store coupling.
+- **Persistence**: Unfinished Crossword rounds and clue-language / help preferences save automatically via the reusable versioned helper in `src/app/storage.ts`, powering the Resume banner on Crossword setup (shared with Sudoku as of v0.6.0).
 
 ### Flagged ambiguities
 
 - Difficulty, mode, and size are separate concepts: Orbit Word uses mode (`Classic` / `Timer`), Sudoku uses difficulty (`Novice` / `Beginner` / `Expert`), and Crossword uses board size (`Mini` / `Classic` / `Grand`).
 - Sudoku uses a standard 9×9 board at every difficulty; its confirmed behavior is described above.
 - Timer behavior differs by game: Orbit Word’s Timer mode keeps running during help; Sudoku’s and Crossword’s elapsed-time clocks pause during help.
-- Persistence differs by game in v0.5.0: Crossword auto-saves unfinished rounds and preferences via `src/app/storage.ts`, while Sudoku remains session-only until adopted later.
+- Persistence across games as of v0.6.0: both Crossword and Sudoku auto-save the latest unfinished round and preferences via `src/app/storage.ts` (Sudoku persists `guestworld:sudoku:round:v1` and `guestworld:sudoku:prefs:v1`, resetting Undo history and Notes mode on resume), while Orbit Word persists only its “Show before each game” preference.

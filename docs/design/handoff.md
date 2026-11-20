@@ -1,4 +1,14 @@
-# Handoff Spec: GuestWorld (v0.5.0)
+# Handoff Spec: GuestWorld (v0.6.0)
+
+
+## v0.6.0 implementation addendum
+
+Supersedes the v0.4.0 unsaved-progress and leave-confirmation notes for Sudoku and completes adoption of the shared `src/app/storage.ts` persistence helper introduced in v0.5.0:
+
+- **Sudoku setup:** Reuses `.resume-banner` above the difficulty cards whenever an unfinished Sudoku round exists in `localStorage`, displaying `IN PROGRESS`, `{Difficulty} · {filled}/81 filled · {MM:SS}`, `Resume puzzle`, and `Discard`. Selecting any difficulty card while a saved round exists opens a confirmation `<Modal>` (`"Start a new puzzle?"` / `"Your in-progress {Difficulty} puzzle will be replaced."` with `Keep saved` and `Start new puzzle`). The setup footnote notes automatic progress saving.
+- **Sudoku exit & auto-save:** Clicking `Games` during an unfinished puzzle saves immediately and returns to the GuestWorld hub (completing or discarding a puzzle clears the saved round); the v0.4.0 `"Leave puzzle? Your progress will be lost."` confirmation dialog is retired. Auto-save also flushes on round start/begin, cell selection, digit/note edits, undo, erase, hint, help open, `pagehide`, and `visibilitychange` (`hidden`).
+- **Sudoku persistence:** Uses `createGameStorage` from `src/app/storage.ts` with versioned keys `guestworld:sudoku:round:v1` (puzzle ID, difficulty, board entries, candidate notes, selected cell, hints used, elapsed time) and `guestworld:sudoku:prefs:v1` (`Show before each puzzle`). Undo `history` and `notesMode` are intentionally excluded from storage and reset (`history: []`, `notesMode: false`) on resume; corrupted, tampered, or already-completed snapshots are rejected safely.
+- **Sudoku help copy:** The How to play modal now reads `"Your unfinished puzzle saves automatically in this browser until solved or replaced."` instead of warning that progress is lost on leave or reload, and the `Show before each puzzle` toggle persists across reloads (falling back to session-only if storage is blocked).
 
 
 ## v0.5.0 implementation addendum
