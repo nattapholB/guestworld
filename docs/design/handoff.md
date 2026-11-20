@@ -1,4 +1,13 @@
-# Handoff Spec: GuestWorld (v0.4.0)
+# Handoff Spec: GuestWorld (v0.5.0)
+
+
+## v0.5.0 implementation addendum
+
+- **Game selection:** GuestWorld title and three equal image cards (`Orbit Word`, `Sudoku`, `Crossword`) arranged in a 3-column desktop grid, 2-column tablet grid (≤900px), and 1-column mobile stack (≤640px). `crossword-cover.jpg` is a `1024×1024` cosmic pixel-art illustration featuring a 3D gold-orange `CROSSWORD` title and a connected 7×7 grid (`1 STAR`, `1 SUN`, `2 ATOM`, `3 MOON`, `4 ORBIT`) harmonized with the existing covers.
+- **Crossword setup:** Three text cards (`01 Mini · 5×5`, `02 Classic · 7×7`, `03 Grand · 9×9`) plus `← Back to games`. When an unfinished round exists in local storage, a reusable `.resume-banner` appears above the size cards showing tier, grid size, filled progress, elapsed time, `Resume puzzle`, and `Discard`; selecting a new size opens a confirmation `<Modal>` before replacing the saved round.
+- **Crossword play:** Steady HTML grid paired with an active clue banner (`‹` / `›` clue navigation, clickable direction badge, and `EN / ไทย` segmented toggle), 4-button `.sudoku-tools` bar (`Check`, `Erase`, `Hint`, `Word`), scrollable Across/Down clue lists, and a toggleable desktop / always-visible mobile (≤768px) QWERTY keyboard.
+- **Crossword HUD, help & completion:** Mirrors Sudoku's pill HUD (`Size`, `Time`, `How to play`, `Games`), pauses the elapsed clock during `How to play`, auto-saves on edits/exit/`pagehide`, and shows `.sudoku-result.end-card.win` (`Size`, `Time`, `Hints used`, `Play Again`, `Change size`, `Back to games`) upon automatic completion.
+- **Fonts & persistence:** `@fontsource/noto-sans-thai` (`400`/`500`/`600`/`700`, OFL in `public/licenses/Noto-Sans-Thai-OFL.txt`) renders Thai clues offline; `src/app/storage.ts` provides a reusable versioned `localStorage` wrapper for Crossword and future Sudoku persistence.
 
 
 ## v0.4.0 implementation addendum

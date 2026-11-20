@@ -1,7 +1,7 @@
 # GuestWorld — Context
 
 ## Overview
-A browser-based puzzle project with a cosmic visual theme. GuestWorld contains Orbit Word and Sudoku behind an illustrated game-selection landing page. Version v0.4.0 adds the game hub and Sudoku. Figma prototype creation was skipped in favor of reusing the existing UI.
+A browser-based puzzle project with a cosmic visual theme. GuestWorld contains Orbit Word, Sudoku, and Crossword behind an illustrated game-selection landing page. Version v0.4.0 added the game hub and Sudoku; version v0.5.0 adds Crossword, offline bilingual (`EN / ไทย`) clues, and shared `localStorage` persistence. Figma prototype creation was skipped in favor of reusing the existing UI.
 
 ## Glossary
 - **Feedback**: Per-letter result shown after each guess — Green (right letter, right position), Yellow (right letter, wrong position), Gray (letter not in the word). Applied per letter, not per word.
@@ -40,13 +40,15 @@ These decisions describe the Orbit Word experience. The game-selection and Sudok
 
 ### Language
 
-**GuestWorld**: The puzzle collection containing Orbit Word and Sudoku.
+**GuestWorld**: The puzzle collection containing Orbit Word, Sudoku, and Crossword.
 
-**Game selection**: The GuestWorld landing screen where a player chooses Orbit Word or Sudoku.
+**Game selection**: The GuestWorld landing screen where a player chooses Orbit Word, Sudoku, or Crossword.
 
 **Orbit Word**: The existing five-letter word-guessing game, with Classic and Timer modes.
 
 **Sudoku**: A number-placement puzzle on a 9×9 board, divided into nine 3×3 boxes, where every row, column, and box contains the digits 1–9 once.
+
+**Crossword**: A word-grid puzzle in Mini (5×5), Classic (7×7), and Grand (9×9) sizes with 4–7 letter English answers and toggleable EN / ไทย clues.
 
 **Conflict**: A repeated digit within a Sudoku row, column, or 3×3 box.
 
@@ -59,9 +61,10 @@ _Avoid_: Mode, which currently describes Orbit Word's Classic and Timer choices.
 
 ### Relationships
 
-- **Game selection** offers two **Games**: Orbit Word and Sudoku.
+- **Game selection** offers three **Games**: Orbit Word, Sudoku, and Crossword.
 - **Orbit Word** has two **Modes**: Classic and Timer.
 - **Sudoku** has three **Difficulties**: Novice, Beginner, and Expert.
+- **Crossword** has three **Sizes**: Mini (5×5), Classic (7×7), and Grand (9×9).
 
 ### Agreed design direction
 
@@ -102,8 +105,16 @@ See [Game selection and Sudoku](docs/plans/0001-game-selection-sudoku.md) for th
 - The Sudoku help preference lasts only for the current session. There is no saved Sudoku puzzle or history.
 - The Sudoku clock pauses for help and leave confirmation; time in a background tab otherwise continues to count.
 
+## Crossword
+
+- **Crossword** is the third game on the GuestWorld hub, offering three board sizes (**Mini** 5×5, **Classic** 7×7, **Grand** 9×9) with 4–7 letter everyday English answers across 56 distinct validated grid patterns solved randomly on each new puzzle.
+- Clues default to English (`EN`) and can be toggled to Thai (`ไทย`) offline at any time via the active clue header; Thai glyphs use bundled Fontsource Noto Sans Thai.
+- Uses the shared cosmic theme, steady board presentation, elapsed-time clock (paused during help), Check / Erase / Hint / Reveal Word tools, and automatic completion without a mistake limit.
+- **Persistence**: Unfinished Crossword rounds and clue-language / help preferences save automatically via the reusable versioned helper in `src/app/storage.ts`, powering the Resume banner on Crossword setup and enabling future Sudoku persistence without store coupling.
+
 ### Flagged ambiguities
 
-- Difficulty and mode are separate concepts: Sudoku uses difficulty; Orbit Word retains its existing modes.
+- Difficulty, mode, and size are separate concepts: Orbit Word uses mode (`Classic` / `Timer`), Sudoku uses difficulty (`Novice` / `Beginner` / `Expert`), and Crossword uses board size (`Mini` / `Classic` / `Grand`).
 - Sudoku uses a standard 9×9 board at every difficulty; its confirmed behavior is described above.
-- Timer behavior differs by game: Orbit Word’s Timer mode keeps running during help; Sudoku’s elapsed-time clock pauses during help.
+- Timer behavior differs by game: Orbit Word’s Timer mode keeps running during help; Sudoku’s and Crossword’s elapsed-time clocks pause during help.
+- Persistence differs by game in v0.5.0: Crossword auto-saves unfinished rounds and preferences via `src/app/storage.ts`, while Sudoku remains session-only until adopted later.
