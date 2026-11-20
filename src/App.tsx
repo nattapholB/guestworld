@@ -12,6 +12,7 @@ import { SudokuGame } from './games/sudoku/SudokuGame'
 import { CrosswordSetup } from './games/crossword/CrosswordSetup'
 import { CrosswordGame } from './games/crossword/CrosswordGame'
 import { SceneBoundary } from './components/SceneBoundary'
+import { PwaUpdateToast } from './components/UI/PwaUpdateToast'
 
 const Scene = lazy(() => import('./components/Scene').then(module => ({ default: module.Scene })))
 function WordGame() {
@@ -33,5 +34,6 @@ export function App() {
     {screen === 'sudoku' && <SudokuGame />}
     {screen === 'crossword-setup' && <CrosswordSetup />}
     {screen === 'crossword' && <CrosswordGame />}
+    <PwaUpdateToast />
   </div>
 }
