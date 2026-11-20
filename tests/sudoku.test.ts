@@ -1,10 +1,19 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { createGameStorage, type StorageLike } from '../src/app/storage'
 import { conflicts, countSolutions, isComplete, PEERS, UNITS } from '../src/games/sudoku/logic'
 import { PUZZLES, pickPuzzle } from '../src/games/sudoku/puzzles'
 import { gradePuzzle } from '../scripts/sudoku-grading'
-import { createSudokuStore, elapsedAt } from '../src/games/sudoku/store'
-import type { Puzzle } from '../src/games/sudoku/types'
+import {
+  createDefaultPrefsStorage,
+  createDefaultRoundStorage,
+  createSudokuStore,
+  elapsedAt,
+  isValidSavedSudokuRound,
+  isValidSudokuPrefs,
+  type SudokuPrefs,
+} from '../src/games/sudoku/store'
+import type { Puzzle, SavedSudokuRound } from '../src/games/sudoku/types'
 import { computeFeedback } from '../src/game/logic'
 import { computeScore } from '../src/game/scoring'
 
@@ -12,12 +21,64 @@ const solution = [5,3,4,6,7,8,9,1,2,6,7,2,1,9,5,3,4,8,1,9,8,3,4,2,5,6,7,8,5,9,7,
 function fixture(empty = [0, 1, 2]): Puzzle {
   return { id: 'fixture', difficulty: 'novice', solution, givens: solution.map((v, i) => empty.includes(i) ? 0 : v), techniques: ['Naked single'] }
 }
-function setup(puzzle = fixture()) {
+function memoryStorage(throwOnAccess = false): StorageLike {
+  const map = new Map<string, string>()
+  return {
+    getItem(k) {
+      if (throwOnAccess) throw new Error('blocked')
+      return map.get(k) ?? null
+    },
+    setItem(k, v) {
+      if (throwOnAccess) throw new Error('quota')
+      map.set(k, v)
+    },
+    removeItem(k) {
+      if (throwOnAccess) throw new Error('blocked')
+      map.delete(k)
+    },
+  }
+}
+function setup(
+  puzzle = fixture(),
+  backends: { roundBackend?: StorageLike; prefsBackend?: StorageLike } = {},
+) {
   let time = 1000
   let wins = 0
   const noop = () => {}
-  const store = createSudokuStore({ now: () => time, choose: () => puzzle, sound: { keyPress: noop, flip: noop, error: noop, win: () => { wins++ }, lose: noop } })
-  return { store, advance: (ms: number) => { time += ms }, elapsed: () => elapsedAt(store.getState(), time), wins: () => wins }
+  const lookupPuzzle = (id: string) => (id === puzzle.id ? puzzle : PUZZLES.find(p => p.id === id) ?? null)
+  const roundBackend = backends.roundBackend ?? memoryStorage()
+  const prefsBackend = backends.prefsBackend ?? memoryStorage()
+  const roundStorage = createGameStorage<SavedSudokuRound>({
+    key: 'test:sudoku:round',
+    version: 1,
+    validate: (v): v is SavedSudokuRound => isValidSavedSudokuRound(v, lookupPuzzle),
+    storage: roundBackend,
+  })
+  const prefsStorage = createGameStorage<SudokuPrefs>({
+    key: 'test:sudoku:prefs',
+    version: 1,
+    validate: isValidSudokuPrefs,
+    storage: prefsBackend,
+  })
+  const store = createSudokuStore({
+    now: () => time,
+    choose: () => puzzle,
+    sound: { keyPress: noop, flip: noop, error: noop, win: () => { wins++ }, lose: noop },
+    lookupPuzzle,
+    roundStorage,
+    prefsStorage,
+  })
+  return {
+    store,
+    roundStorage,
+    prefsStorage,
+    roundBackend,
+    prefsBackend,
+    lookupPuzzle,
+    advance: (ms: number) => { time += ms },
+    elapsed: () => elapsedAt(store.getState(), time),
+    wins: () => wins,
+  }
 }
 
 test('peer topology has exactly 20 peers per cell and symmetric relationships', () => {
@@ -63,16 +124,15 @@ test('all 60 puzzle fixtures are distinct, unique, solvable, and correctly grade
 test('new puzzles stay in the selected tier and avoid the preceding puzzle', () => {
   for (const p of PUZZLES) { const next = pickPuzzle(p.difficulty,p.id,()=>0); assert.notEqual(next.id,p.id); assert.equal(next.difficulty,p.difficulty) }
 })
-test('intro, help, and leave dialogs pause time and block all mutations', () => {
-  const c=setup(), get=c.store.getState
+test('intro and help dialogs pause time and block all mutations', () => {
+  const c = setup(), get = c.store.getState
   get().start('novice'); c.advance(4000)
-  get().enter(1); get().hint(); get().toggleNotes(); assert.equal(get().entries[0],0); assert.equal(c.elapsed(),0)
+  get().enter(1); get().hint(); get().toggleNotes(); assert.equal(get().entries[0], 0); assert.equal(c.elapsed(), 0)
   get().begin(); c.advance(2000); get().openDialog('help'); c.advance(5000)
-  get().enter(5); get().hint(); get().select(20); assert.equal(get().entries[0],0); assert.equal(get().selected,0)
-  get().openDialog('leave'); assert.equal(get().dialog,'help'); assert.equal(c.elapsed(),2000)
-  get().closeDialog(); get().closeDialog(); c.advance(3000); assert.equal(c.elapsed(),5000)
-  get().openDialog('leave'); c.advance(1000); assert.equal(c.elapsed(),5000)
-  get().closeDialog(); c.advance(1000); assert.equal(c.elapsed(),6000)
+  get().enter(5); get().hint(); get().select(20); assert.equal(get().entries[0], 0); assert.equal(get().selected, 0)
+  assert.equal(get().dialog, 'help'); assert.equal(c.elapsed(), 2000)
+  assert.equal(c.roundStorage.load()?.elapsedMs, 2000)
+  get().closeDialog(); get().closeDialog(); c.advance(3000); assert.equal(c.elapsed(), 5000)
 })
 test('givens are immutable; invalid indices and values cannot corrupt the board', () => {
   const { store }=setup(), get=store.getState; get().start('novice',true); get().select(3)
@@ -102,16 +162,230 @@ test('normal input does not flag solution disagreement without a duplicate', () 
   get().start('novice',true); get().enter(1)
   assert.equal(conflicts(get().entries).size,0); assert.equal(get().announcement,'1 entered.')
 })
-test('final move completes once and freezes time and editing; replay resets the round', () => {
-  const c=setup(fixture([0])), get=c.store.getState; get().start('novice',true); c.advance(2500); get().enter(5)
+test('final move completes once, freezes time/editing, clears saved round; replay resets the round', () => {
+  const c=setup(fixture([0])), get=c.store.getState; get().start('novice',true); c.advance(2500)
+  assert.ok(c.roundStorage.load() !== null); assert.ok(get().savedSummary !== null)
+  get().enter(5)
   assert.equal(get().phase,'completed'); assert.equal(c.wins(),1); c.advance(2000); assert.equal(c.elapsed(),2500)
+  assert.equal(c.roundStorage.load(), null); assert.equal(get().savedSummary, null)
   get().enter(3); get().erase(); get().undo(); get().hint(); assert.equal(get().entries[0],5)
   get().start('novice',true); assert.equal(get().phase,'playing'); assert.equal(get().entries[0],0); assert.equal(get().hintsUsed,0); assert.equal(get().history.length,0); assert.equal(c.elapsed(),0)
+  assert.ok(c.roundStorage.load() !== null)
 })
-test('a final hint completes and discard clears active state', () => {
-  const c=setup(fixture([0])), get=c.store.getState; get().start('novice',true); get().hint()
+test('a final hint completes and clears saved round; discard clears active state and saved round', () => {
+  const c=setup(fixture([0, 1])), get=c.store.getState; get().start('novice',true); get().enter(5)
+  assert.ok(c.roundStorage.load() !== null)
+  get().select(1); get().hint()
   assert.equal(get().phase,'completed'); assert.equal(get().hintsUsed,1)
-  get().discard(); assert.equal(get().phase,'idle'); assert.equal(get().entries.length,0); assert.equal(get().runningSince,null)
+  assert.equal(c.roundStorage.load(), null); assert.equal(get().savedSummary, null)
+  get().start('novice',true); assert.ok(c.roundStorage.load() !== null)
+  get().discard()
+  assert.equal(get().phase,'idle'); assert.equal(get().puzzle,null); assert.equal(get().entries.length,0); assert.equal(get().runningSince,null)
+  assert.equal(c.roundStorage.load(), null); assert.equal(get().savedSummary, null)
+})
+test('saveAndLeave persists unfinished progress and resume restores board while resetting history and notesMode', () => {
+  const p = fixture([0, 1, 2])
+  const roundBackend = memoryStorage()
+  const prefsBackend = memoryStorage()
+  const c1 = setup(p, { roundBackend, prefsBackend })
+  const get1 = c1.store.getState
+
+  get1().start('novice', true)
+  c1.advance(1500)
+  get1().enter(5) // cell 0 filled -> 79/81 filled
+  get1().select(1)
+  get1().toggleNotes()
+  get1().enter(3)
+  get1().enter(7) // notes on cell 1: bits 3 & 7
+  get1().select(2)
+  get1().toggleNotes()
+  get1().hint() // cell 2 hinted -> 80/81 filled, hintsUsed = 1
+  get1().select(1)
+  get1().toggleNotes() // leave notesMode ON before saving
+  assert.equal(get1().notesMode, true)
+  assert.ok(get1().history.length > 0)
+
+  c1.advance(2700) // total elapsed = 4200
+  get1().flushSave()
+  assert.equal(c1.roundStorage.load()?.elapsedMs, 4200)
+
+  c1.advance(800) // total elapsed = 5000
+  get1().saveAndLeave()
+  assert.equal(get1().phase, 'idle')
+  assert.equal(get1().puzzle, null)
+  assert.deepEqual(get1().savedSummary, { difficulty: 'novice', filledCount: 80, elapsedMs: 5000 })
+
+  // Simulate full reload with fresh store sharing the same backing storage
+  const c2 = setup(p, { roundBackend, prefsBackend })
+  const get2 = c2.store.getState
+  assert.deepEqual(get2().savedSummary, { difficulty: 'novice', filledCount: 80, elapsedMs: 5000 })
+  assert.equal(get2().resume(), true)
+  assert.equal(get2().phase, 'playing')
+  assert.equal(get2().puzzle?.id, p.id)
+  assert.equal(get2().difficulty, 'novice')
+  assert.equal(get2().entries[0], 5)
+  assert.equal(get2().entries[1], 0)
+  assert.equal(get2().entries[2], 4)
+  assert.equal(get2().notes[1], (1 << 3) | (1 << 7))
+  assert.equal(get2().selected, 1)
+  assert.equal(get2().hintsUsed, 1)
+  assert.equal(c2.elapsed(), 5000)
+  // Undo history and notesMode are intentionally not persisted
+  assert.deepEqual(get2().history, [])
+  assert.equal(get2().notesMode, false)
+
+  // Subsequent undo/erase/select auto-save updates persisted snapshot
+  get2().erase()
+  assert.equal(c2.roundStorage.load()?.notes[1], 0)
+  get2().undo()
+  assert.equal(c2.roundStorage.load()?.notes[1], (1 << 3) | (1 << 7))
+  get2().select(0)
+  assert.equal(c2.roundStorage.load()?.selected, 0)
+})
+test('discardSaved clears saved round without affecting active prefs', () => {
+  const p = fixture([0, 1])
+  const roundBackend = memoryStorage()
+  const prefsBackend = memoryStorage()
+  const c = setup(p, { roundBackend, prefsBackend })
+  const get = c.store.getState
+
+  get().setShowHowTo(false)
+  get().start('novice')
+  assert.equal(get().phase, 'playing')
+  get().enter(5)
+  get().saveAndLeave()
+  assert.ok(get().savedSummary !== null)
+  assert.ok(c.roundStorage.load() !== null)
+
+  get().discardSaved()
+  assert.equal(get().savedSummary, null)
+  assert.equal(c.roundStorage.load(), null)
+  assert.equal(get().resume(), false)
+  assert.equal(c.prefsStorage.load()?.showHowTo, false)
+})
+test('showHowTo preference persists across fresh store reload', () => {
+  const p = fixture([0, 1])
+  const prefsBackend = memoryStorage()
+  const c1 = setup(p, { prefsBackend })
+  assert.equal(c1.store.getState().showHowTo, true)
+
+  c1.store.getState().setShowHowTo(false)
+  assert.equal(c1.store.getState().showHowTo, false)
+
+  const c2 = setup(p, { prefsBackend })
+  assert.equal(c2.store.getState().showHowTo, false)
+  c2.store.getState().start('novice')
+  assert.equal(c2.store.getState().phase, 'playing')
+
+  c2.store.getState().setShowHowTo(true)
+  const c3 = setup(p, { prefsBackend })
+  assert.equal(c3.store.getState().showHowTo, true)
+  c3.store.getState().start('novice')
+  assert.equal(c3.store.getState().phase, 'intro')
+})
+test('isValidSavedSudokuRound strictly rejects invalid, tampered, and completed snapshots and handles storage failures', () => {
+  const p = fixture([0, 1, 2])
+  const lookup = (id: string) => (id === p.id ? p : null)
+  const valid = (): SavedSudokuRound => ({
+    puzzleId: p.id,
+    difficulty: 'novice',
+    entries: [...p.givens],
+    notes: Array(81).fill(0),
+    selected: 0,
+    hintsUsed: 1,
+    elapsedMs: 1234,
+  })
+
+  // Default storage keys/versions and real bank lookup
+  assert.equal(createDefaultRoundStorage().key, 'guestworld:sudoku:round:v1')
+  assert.equal(createDefaultRoundStorage().version, 1)
+  assert.equal(createDefaultPrefsStorage().key, 'guestworld:sudoku:prefs:v1')
+  assert.equal(createDefaultPrefsStorage().version, 1)
+  const bankPuzzle = PUZZLES[0]
+  assert.equal(isValidSavedSudokuRound({
+    puzzleId: bankPuzzle.id,
+    difficulty: bankPuzzle.difficulty,
+    entries: [...bankPuzzle.givens],
+    notes: Array(81).fill(0),
+    selected: bankPuzzle.givens.indexOf(0),
+    hintsUsed: 0,
+    elapsedMs: 0,
+  }), true)
+
+  assert.equal(isValidSavedSudokuRound(valid(), lookup), true)
+  assert.equal(isValidSavedSudokuRound(null, lookup), false)
+  assert.equal(isValidSavedSudokuRound('bad', lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), puzzleId: 'missing' }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), difficulty: 'expert' }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), entries: valid().entries.slice(0, 80) }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), notes: valid().notes.slice(0, 80) }, lookup), false)
+
+  // Tampered immutable given cell (index 3 has given 6)
+  const tamperedGiven = valid()
+  tamperedGiven.entries[3] = 0
+  assert.equal(isValidSavedSudokuRound(tamperedGiven, lookup), false)
+  tamperedGiven.entries[3] = 7
+  assert.equal(isValidSavedSudokuRound(tamperedGiven, lookup), false)
+
+  // Out-of-range / non-integer entry
+  const badEntry = valid()
+  badEntry.entries[0] = 10
+  assert.equal(isValidSavedSudokuRound(badEntry, lookup), false)
+  badEntry.entries[0] = 1.5
+  assert.equal(isValidSavedSudokuRound(badEntry, lookup), false)
+
+  // Invalid note bitmasks: bit 0, bit 10, negative, float, 32-bit overflow, note on filled cell
+  for (const badMask of [1, 1 << 10, -2, 2.5, 2 ** 32]) {
+    const badNote = valid()
+    badNote.notes[0] = badMask
+    assert.equal(isValidSavedSudokuRound(badNote, lookup), false, `expected mask ${badMask} to fail`)
+  }
+  const noteOnFilled = valid()
+  noteOnFilled.entries[0] = 5
+  noteOnFilled.notes[0] = 1 << 2
+  assert.equal(isValidSavedSudokuRound(noteOnFilled, lookup), false)
+
+  // Valid note bitmask on empty cell passes
+  const goodNote = valid()
+  goodNote.notes[0] = (1 << 1) | (1 << 9)
+  assert.equal(isValidSavedSudokuRound(goodNote, lookup), true)
+
+  // Invalid selected / hintsUsed / elapsedMs
+  assert.equal(isValidSavedSudokuRound({ ...valid(), selected: -1 }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), selected: 81 }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), selected: 1.5 }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), hintsUsed: -1 }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), hintsUsed: 0.5 }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), elapsedMs: -1 }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), elapsedMs: Number.NaN }, lookup), false)
+  assert.equal(isValidSavedSudokuRound({ ...valid(), elapsedMs: Number.POSITIVE_INFINITY }, lookup), false)
+
+  // Already-completed board must be rejected
+  assert.equal(isValidSavedSudokuRound({ ...valid(), entries: [...solution] }, lookup), false)
+
+  // Prefs validation
+  assert.equal(isValidSudokuPrefs({ showHowTo: true }), true)
+  assert.equal(isValidSudokuPrefs({ showHowTo: false }), true)
+  assert.equal(isValidSudokuPrefs({ showHowTo: 'yes' }), false)
+  assert.equal(isValidSudokuPrefs(null), false)
+
+  // Corrupted JSON and blocked storage degrade safely without throwing
+  const corruptBackend = memoryStorage()
+  corruptBackend.setItem('test:sudoku:round', '{not-valid-json')
+  const corruptCtx = setup(p, { roundBackend: corruptBackend })
+  assert.equal(corruptCtx.store.getState().savedSummary, null)
+  assert.equal(corruptCtx.store.getState().resume(), false)
+
+  const blockedCtx = setup(p, { roundBackend: memoryStorage(true), prefsBackend: memoryStorage(true) })
+  assert.doesNotThrow(() => {
+    blockedCtx.store.getState().start('novice', true)
+    blockedCtx.store.getState().enter(5)
+    blockedCtx.store.getState().setShowHowTo(false)
+    blockedCtx.store.getState().flushSave()
+    blockedCtx.store.getState().saveAndLeave()
+    blockedCtx.store.getState().discardSaved()
+  })
+  assert.equal(blockedCtx.store.getState().savedSummary, null)
 })
 test('Orbit Word duplicate feedback and timer scores retain their rules', () => {
   assert.deepEqual(computeFeedback('allee','apple'), ['correct','present','absent','absent','correct'])

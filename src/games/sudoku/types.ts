@@ -11,3 +11,13 @@ export const DIFFICULTIES: { id: Difficulty; title: string; description: string 
   { id: 'beginner', title: 'Beginner', description: 'Build confidence with a little more deduction.' },
   { id: 'expert', title: 'Expert', description: 'A deeper challenge requiring several steps of reasoning.' },
 ]
+
+export interface SavedSudokuRound {
+  puzzleId: string
+  difficulty: Difficulty
+  entries: number[]
+  notes: number[]
+  selected: number
+  hintsUsed: number
+  elapsedMs: number
+}

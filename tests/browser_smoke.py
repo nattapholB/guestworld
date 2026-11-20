@@ -18,7 +18,8 @@ with sync_playwright() as p:
     page.goto(URL)
     page.wait_for_load_state('networkidle')
     expect(page.get_by_role('heading',name='GUESTWORLD',exact=True)).to_be_visible()
-    assert page.locator('.game-card img').evaluate_all('(images) => images.every(i => i.complete && i.naturalWidth === 1254)')
+    expect(page.locator('.game-card')).to_have_count(3)
+    assert page.locator('.game-card img').evaluate_all('(images) => images.length === 3 && images.every(i => i.complete && i.naturalWidth >= 1024)')
     page.screenshot(path=str(ARTIFACTS/'hub.png'),full_page=True)
     page.get_by_role('button',name='Orbit Word',exact=True).focus()
     page.keyboard.press('Enter')
@@ -106,10 +107,33 @@ with sync_playwright() as p:
     assert state('s.runningSince') is not None
     assert state('s.elapsedMs') == paused
     expect(page.get_by_role('button',name='How to play',exact=True)).to_be_focused()
+    # Enter a valid digit, leave directly via Games (auto-saves), reload, and resume.
+    page.locator(f'[data-cell="{cell}"]').click()
+    page.keyboard.type(str(digit))
+    assert state(f's.entries[{cell}]') == digit
     page.get_by_role('button',name='Games',exact=True).click()
-    expect(page.get_by_role('heading',name='Leave puzzle?',exact=True)).to_be_visible()
-    assert state('s.runningSince') is None
-    page.get_by_role('button',name='Keep playing').click()
+    expect(page.get_by_role('heading',name='GUESTWORLD',exact=True)).to_be_visible()
+    expect(page.get_by_role('dialog')).to_have_count(0)
+    assert state('s.phase') == 'idle'
+    assert state('s.savedSummary') is not None
+    page.reload()
+    page.wait_for_load_state('networkidle')
+    expect(page.get_by_role('heading',name='GUESTWORLD',exact=True)).to_be_visible()
+    page.get_by_role('button',name='Sudoku',exact=True).click()
+    expect(page.locator('.resume-banner')).to_be_visible()
+    expect(page.locator('.resume-banner')).to_contain_text('Beginner')
+    # Starting a new puzzle while a saved round exists prompts for confirmation.
+    page.get_by_role('button',name='Novice',exact=False).click()
+    expect(page.get_by_role('heading',name='Start a new puzzle?',exact=True)).to_be_visible()
+    page.get_by_role('button',name='Keep saved',exact=True).click()
+    expect(page.get_by_role('dialog')).to_have_count(0)
+    page.get_by_role('button',name='Resume puzzle',exact=True).click()
+    expect(page.get_by_role('gridcell')).to_have_count(81)
+    expect(page.get_by_role('dialog')).to_have_count(0)
+    assert state(f's.entries[{cell}]') == digit
+    assert state('s.hintsUsed') == 1
+    assert state('s.history.length') == 0
+    assert state('s.notesMode') is False
     assert state('s.runningSince') is not None
     # Fill a fixed near-complete test fixture, then complete through real keyboard input.
     page.evaluate("""async (solution) => {
@@ -123,6 +147,8 @@ with sync_playwright() as p:
     page.keyboard.press('5')
     expect(page.get_by_role('heading',name='SOLVED',exact=True)).to_be_visible()
     assert state('s.runningSince') is None
+    assert state('s.savedSummary') is None
+    assert page.evaluate("localStorage.getItem('guestworld:sudoku:round:v1')") is None
     page.screenshot(path=str(ARTIFACTS/'completed.png'),full_page=True)
     page.get_by_role('button',name='Play Again',exact=True).click()
     assert state('s.phase') == 'playing'
@@ -138,17 +164,26 @@ with sync_playwright() as p:
         assert page.get_by_role('button',name='Hint',exact=True).bounding_box()['y'] < 844
         page.screenshot(path=str(ARTIFACTS/f'sudoku-{width}.png'),full_page=True)
     page.get_by_role('button',name='Games',exact=True).click()
-    page.get_by_role('button',name='Leave puzzle',exact=True).click()
     expect(page.get_by_role('heading',name='GUESTWORLD',exact=True)).to_be_visible()
     assert state('s.phase') == 'idle'
     page.get_by_role('button',name='Sudoku',exact=True).scroll_into_view_if_needed()
     assert page.get_by_role('button',name='Sudoku',exact=True).bounding_box()['y'] < 844
     page.screenshot(path=str(ARTIFACTS/'hub-mobile.png'),full_page=True)
     page.get_by_role('button',name='Sudoku',exact=True).click()
+    expect(page.locator('.resume-banner')).to_be_visible()
+    page.get_by_role('button',name='Discard',exact=True).click()
+    expect(page.locator('.resume-banner')).to_have_count(0)
     page.get_by_role('button',name='Expert',exact=False).click()
     page.get_by_role('button',name='Start puzzle').click()
     page.reload()
+    page.wait_for_load_state('networkidle')
     expect(page.get_by_role('heading',name='GUESTWORLD',exact=True)).to_be_visible()
+    page.get_by_role('button',name='Sudoku',exact=True).click()
+    expect(page.locator('.resume-banner')).to_be_visible()
+    expect(page.locator('.resume-banner')).to_contain_text('Expert')
+    page.get_by_role('button',name='Resume puzzle',exact=True).click()
+    expect(page.get_by_role('gridcell')).to_have_count(81)
+    assert state('s.difficulty') == 'expert'
     assert not errors, errors
     print(json.dumps({'result':'passed','browser_errors':errors,'artifacts':str(ARTIFACTS)}))
     browser.close()

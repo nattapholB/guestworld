@@ -28,15 +28,19 @@ export function SudokuGame() {
   const navigate = useAppStore(state => state.navigate)
   const boardRef = useRef<HTMLDivElement>(null)
   const duplicateCells = useMemo(() => conflicts(s.entries), [s.entries])
-  const level = DIFFICULTIES.find(d => d.id === s.difficulty)!
-  const done = s.phase === 'completed'
-  const active = s.phase === 'playing' && s.dialog === 'none'
-  const given = s.selected >= 0 && !!s.puzzle?.givens[s.selected]
-  const filled = s.entries.filter(Boolean).length
-  const selectedDigit = s.entries[s.selected]
-  const canHint = active && !given && s.selected >= 0 && selectedDigit !== s.puzzle?.solution[s.selected]
-  const closeHelp = s.phase === 'intro' ? s.begin : s.closeDialog
-  const leave = () => { s.discard(); navigate('games') }
+
+  useEffect(() => {
+    const onHide = () => s.flushSave()
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') s.flushSave()
+    }
+    window.addEventListener('pagehide', onHide)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pagehide', onHide)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [s.flushSave])
 
   useEffect(() => {
     if (s.phase === 'playing' && s.dialog === 'none') {
@@ -44,6 +48,28 @@ export function SudokuGame() {
       target?.focus({ preventScroll: true })
     }
   }, [s.phase])
+
+  if (!s.puzzle) {
+    return (
+      <main className="selection-page setup-page">
+        <p className="menu-subtitle">No active Sudoku puzzle.</p>
+        <button className="btn" onClick={() => navigate('sudoku-setup')}>
+          Choose a difficulty
+        </button>
+      </main>
+    )
+  }
+
+  const level = DIFFICULTIES.find(d => d.id === s.difficulty) ?? DIFFICULTIES[0]
+  const done = s.phase === 'completed'
+  const active = s.phase === 'playing' && s.dialog === 'none'
+  const given = s.selected >= 0 && !!s.puzzle.givens[s.selected]
+  const filled = s.entries.filter(Boolean).length
+  const selectedDigit = s.entries[s.selected]
+  const canHint = active && !given && s.selected >= 0 && selectedDigit !== s.puzzle.solution[s.selected]
+  const closeHelp = s.phase === 'intro' ? s.begin : s.closeDialog
+  const leaveCompleted = () => { s.discard(); navigate('games') }
+  const leaveToGames = () => { s.saveAndLeave(); navigate('games') }
 
   const handleKey = (e: KeyboardEvent) => {
     if (!active || e.altKey || e.ctrlKey || e.metaKey || e.defaultPrevented) return
@@ -70,7 +96,7 @@ export function SudokuGame() {
         <div className="hud-item"><span className="hud-label">Level</span><span className="hud-value">{level.title}</span></div>
         <div className="hud-item"><span className="hud-label">Time</span><SudokuClock /></div>
         {!done && <button className="hud-menu-link" onClick={() => s.openDialog('help')}>How to play</button>}
-        <button className="hud-menu-link" onClick={() => done ? leave() : s.openDialog('leave')}>Games</button>
+        <button className="hud-menu-link" onClick={done ? leaveCompleted : leaveToGames}>Games</button>
       </div>
     </header>
     <div className="sudoku-layout">
@@ -109,7 +135,7 @@ export function SudokuGame() {
           <dl className="sudoku-result-stats"><div><dt>Difficulty</dt><dd>{level.title}</dd></div><div><dt>Time</dt><dd>{formatTime(s.elapsedMs)}</dd></div><div><dt>Hints used</dt><dd>{s.hintsUsed}</dd></div></dl>
           <button className="btn" onClick={() => s.start(s.difficulty, true)}>Play Again</button>
           <button className="btn secondary" onClick={() => { s.discard(); navigate('sudoku-setup') }}>Change difficulty</button>
-          <button className="hud-menu-link" onClick={leave}>Back to games</button>
+          <button className="hud-menu-link" onClick={leaveCompleted}>Back to games</button>
         </section> : <>
           <div className="control-heading"><span className="eyebrow">YOUR NEXT MOVE</span><span className="hint-count">Hints used <b>{s.hintsUsed}</b></span></div>
           <p className="selected-cell-label">{given ? 'This is a given cell.' : `Row ${Math.floor(s.selected / 9) + 1} · Column ${s.selected % 9 + 1}`}<span>{given ? 'Select an empty cell to add a number.' : s.notesMode ? 'Notes are on. Add possible digits.' : 'Choose a number or type 1–9.'}</span></p>
@@ -133,12 +159,9 @@ export function SudokuGame() {
         <p className="howto-lead">Fill the 9×9 grid with the digits <b>1–9</b>. Each digit appears once in every row, column, and 3×3 box.</p>
         <div className="help-digits" aria-hidden="true">{DIGITS.map(d => <span key={d}>{d}</span>)}</div>
         <ul className="sudoku-help-list"><li><b>Select a cell</b>, then type or choose a number. The starting numbers stay fixed.</li><li><b>Notes</b> hold possible digits. Use Undo or Erase to change your mind.</li><li><b>Hint</b> reveals the selected cell and counts toward hints used.</li><li><b>Duplicates are highlighted</b>. There is no mistake limit and no countdown.</li></ul>
-        <p className="howto-mode">{s.phase === 'intro' ? 'The clock starts when you begin.' : 'The clock is paused while you read.'} Progress is not saved when you leave or reload.</p>
+        <p className="howto-mode">{s.phase === 'intro' ? 'The clock starts when you begin.' : 'The clock is paused while you read.'} Your unfinished puzzle saves automatically in this browser until solved or replaced.</p>
         <div className="howto-footer"><label className="toggle"><input type="checkbox" checked={s.showHowTo} onChange={e => s.setShowHowTo(e.target.checked)} /><span className="toggle-track" aria-hidden="true"><span className="toggle-thumb" /></span>Show before each puzzle</label><button className="btn" data-initial-focus onClick={closeHelp}>{s.phase === 'intro' ? 'Start puzzle' : 'Back to game'}</button></div>
       </div>
-    </Modal>}
-    {s.dialog === 'leave' && <Modal titleId="leave-title" onClose={s.closeDialog}>
-      <div className="howto-card leave-card"><p className="eyebrow">TAKING OFF?</p><h2 id="leave-title">Leave puzzle?</h2><p>Your progress will be lost.</p><p className="dialog-note">The clock is paused. You can keep playing right where you left off.</p><div className="end-actions"><button className="btn" data-initial-focus onClick={s.closeDialog}>Keep playing</button><button className="btn secondary" onClick={leave}>Leave puzzle</button></div></div>
     </Modal>}
   </main>
 }
