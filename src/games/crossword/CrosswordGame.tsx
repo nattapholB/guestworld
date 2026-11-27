@@ -33,6 +33,7 @@ export function CrosswordGame() {
   const s = useCrosswordStore()
   const navigate = useAppStore(state => state.navigate)
   const boardRef = useRef<HTMLDivElement>(null)
+  const cluesRef = useRef<HTMLDivElement>(null)
   const activeClueRef = useRef<HTMLButtonElement>(null)
   const [showKeyboard, setShowKeyboard] = useState(false)
 
@@ -65,7 +66,16 @@ export function CrosswordGame() {
   )
 
   useEffect(() => {
-    activeClueRef.current?.scrollIntoView({ block: 'nearest' })
+    const container = cluesRef.current
+    const item = activeClueRef.current
+    if (!container || !item) return
+    const itemTop = item.offsetTop - container.offsetTop
+    const itemBottom = itemTop + item.offsetHeight
+    if (itemTop < container.scrollTop) {
+      container.scrollTop = itemTop
+    } else if (itemBottom > container.scrollTop + container.clientHeight) {
+      container.scrollTop = itemBottom - container.clientHeight
+    }
   }, [activeClue?.number, activeClue?.direction])
 
   if (!puzzle) {
@@ -200,7 +210,7 @@ export function CrosswordGame() {
   )
 
   return (
-    <main className="sudoku-page crossword-page" onKeyDown={handleKey}>
+    <main className={`sudoku-page crossword-page${showKeyboard ? ' has-keyboard' : ''}`} onKeyDown={handleKey}>
       <header className="sudoku-header">
         <div>
           <p className="eyebrow">GUESTWORLD / WORD GRID</p>
@@ -524,7 +534,7 @@ export function CrosswordGame() {
                 </button>
               </div>
 
-              <div className="crossword-clues" aria-label="Puzzle clues">
+              <div ref={cluesRef} className="crossword-clues" aria-label="Puzzle clues">
                 {renderClueGroup('ACROSS', 'across', puzzle.clues.across)}
                 {renderClueGroup('DOWN', 'down', puzzle.clues.down)}
               </div>

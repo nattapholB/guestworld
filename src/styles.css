@@ -610,6 +610,16 @@ button:disabled { opacity: .35; cursor: not-allowed; }
 .cw-key { flex: 1; max-width: 44px; min-width: 0; height: 42px; font-size: .82rem; border-radius: 8px; padding: 0; }
 .cw-key-wide { flex: 1.45; max-width: 64px; font-size: .9rem; }
 
+@media (min-width: 769px) {
+  .crossword-page.has-keyboard { padding-top: calc(20px + env(safe-area-inset-top)); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+  .crossword-page.has-keyboard .sudoku-header { margin-bottom: 20px; }
+  .crossword-page.has-keyboard .board-caption { margin-bottom: 10px; }
+  .crossword-page.has-keyboard .crossword-active-clue { padding: 10px 14px; margin-bottom: 10px; }
+  .crossword-page.has-keyboard .crossword-board { max-width: min(100%, max(260px, calc(100dvh - 410px))); margin-inline: auto; }
+  .crossword-page.has-keyboard .board-status { margin-top: 10px; }
+  .crossword-page.has-keyboard .crossword-keyboard { margin-top: 12px; }
+}
+
 @media (max-width: 900px) {
   .game-cards { grid-template-columns: repeat(2, minmax(0,1fr)); max-width: 696px; }
   .selection-footer { max-width: 696px; }
@@ -635,19 +645,29 @@ button:disabled { opacity: .35; cursor: not-allowed; }
   .back-link { top: calc(24px + env(safe-area-inset-top)); left: calc(24px + env(safe-area-inset-left)); }
   .mode-buttons, .difficulty-cards { grid-template-columns: minmax(0,1fr); width: min(100%,340px); }
   .mode-card { min-height: 130px; }
-  .sudoku-page { padding: calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); max-width: 536px; }
-  .sudoku-header { margin-bottom: 24px; }
-  .sudoku-hud { width: 100%; gap: 12px; flex-wrap: wrap; justify-content: space-between; border-radius: 14px; padding: 14px; }
+  .sudoku-page { padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); max-width: 536px; }
+  .sudoku-header { gap: 12px; margin-bottom: 14px; }
+  .sudoku-hud { width: 100%; gap: 12px; flex-wrap: wrap; justify-content: space-between; border-radius: 14px; padding: 10px 14px; }
   .sudoku-hud .hud-item { gap: 5px; }
   .sudoku-hud .hud-menu-link { font-size: .72rem; }
-  .sudoku-layout { grid-template-columns: minmax(0,1fr); gap: 28px; }
+  .sudoku-layout { grid-template-columns: minmax(0,1fr); gap: 16px; }
   .sudoku-cell { font-size: 1.3rem; }
-  .board-caption { font-size: .62rem; }
+  .board-caption { font-size: .62rem; margin-bottom: 8px; }
+  .board-status { margin-top: 10px; }
   .number-pad { grid-template-columns: repeat(9,minmax(0,1fr)); gap: 5px; }
   .digit-key { height: 44px; font-size: .9rem; border-radius: 6px; }
-  .cw-key { height: 40px; font-size: .78rem; }
-  .control-heading { margin-bottom: 14px; }
-  .sudoku-tools { margin-top: 16px; }
+  .cw-key { height: 38px; font-size: .78rem; }
+  .control-heading { margin-bottom: 8px; }
+  .selected-cell-label { margin-bottom: 10px; }
+  .sudoku-tools { margin-top: 10px; }
+  .tool-button { min-height: 60px; }
+  .crossword-page { padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .crossword-page .sudoku-header { gap: 8px; margin-bottom: 10px; }
+  .crossword-page .crossword-active-clue { padding: 8px 12px; margin-bottom: 10px; }
+  .crossword-page .cw-active-text { margin-top: 6px; font-size: .84rem; }
+  .crossword-page .crossword-board { max-width: min(100%, max(230px, calc(100dvh - 385px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))); margin-inline: auto; }
+  .crossword-page .board-status { margin-top: 8px; }
+  .crossword-page .crossword-keyboard { margin-top: 10px; gap: 5px; }
   .sudoku-tip, .keyboard-guide { display: none; }
   .game-dialog .howto-card { padding: 22px 20px; }
   .pwa-update-toast { left: calc(16px + env(safe-area-inset-left)); right: calc(16px + env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); max-width: none; flex-wrap: wrap; }
