@@ -1,4 +1,9 @@
-# Handoff Spec: GuestWorld (v0.7.1)
+# Handoff Spec: GuestWorld (v0.7.2)
+
+
+## v0.7.2 implementation addendum
+
+- **Modal centering:** `.game-dialog` sets explicit `margin: auto`, `width: min(460px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)))`, and safe-area-aware max bounds with `.game-dialog .howto-card { width: 100%; }`, preventing intrinsic text width from expanding `<dialog>` wider than the `460px` card and keeping `HOW TO PLAY`, confirm, and iOS guide modals centered across Chromium and WebKit.
 
 
 ## v0.7.1 implementation addendum
