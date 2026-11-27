@@ -23,7 +23,7 @@ The production build goes to `dist/`. Relative asset URLs support the GitHub Pag
 
 ## Validation
 
-`npm test` runs the Sudoku/Word (`tests/sudoku.test.ts`), Crossword/storage (`tests/crossword.test.ts`), and PWA (`tests/pwa.test.ts`) rule, content, generator, lifecycle, timer, install-detection, and `index.html` metadata checks using Node's test runner through tsx (32 tests).
+`npm test` runs the Sudoku/Word (`tests/sudoku.test.ts`), Crossword/storage (`tests/crossword.test.ts`), PWA (`tests/pwa.test.ts`), and 3D camera framing (`tests/camera.test.ts`) checks using Node's test runner through tsx (33 tests).
 
 For the Orbit Word and Sudoku browser walkthrough, install Python Playwright and Chromium, start Vite on port 5173, then run:
 
@@ -55,6 +55,7 @@ Crossword puzzles are generated live in the browser across 56 distinct validated
 - `src/components/`: shared presentation and the 3D Word scene.
 - `src/assets/`: web-ready covers and fonts.
 - `docs/plans/0001-game-selection-sudoku.md`: decisions and implementation record.
+- `docs/releases/v0.7.1.md`: v0.7.1 release notes.
 - `docs/releases/v0.7.0.md`: v0.7.0 release notes.
 - `docs/releases/v0.6.0.md`: v0.6.0 release notes.
 - `docs/releases/v0.5.0.md`: v0.5.0 release notes.

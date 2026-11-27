@@ -120,8 +120,8 @@ See [Game selection and Sudoku](docs/plans/0001-game-selection-sudoku.md) for th
 - **Client code:** `src/app/pwa.ts` (zustand `usePwaStore`: online state, standalone detection, deferred `beforeinstallprompt`, iOS Safari detection, `getInstallMode`); `src/components/UI/PwaUpdateToast.tsx` (`useRegisterSW`, bottom `Update available` toast with `Reload` / `Later`, update check when the tab becomes visible); `src/components/Menu/GameSelection.tsx` footer (`Install App` button, iOS Safari `Add to Home Screen` modal, `Offline` pill).
 - **Install affordance:** hidden when already standalone; native prompt when the browser offers one; iOS Safari guide otherwise; hidden in all other cases.
 - **Assets and metadata:** `public/icons/` (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `favicon-32.png`), `public/apple-touch-icon.png` (180×180), `public/favicon.ico`; `index.html` adds `viewport-fit=cover`, `theme-color` `#05061a`, and Apple web-app meta tags.
-- **Mobile polish:** `src/styles.css` applies `env(safe-area-inset-*)` padding, `touch-action: manipulation` on buttons and puzzle cells, and `overscroll-behavior-y: none`.
-- **Tests:** `tests/pwa.test.ts` (standalone / iOS Safari / install-mode logic, `promptInstall`, and `index.html` contract). `npm test` runs 32 tests.
+- **Mobile & PWA keyboard polish (v0.7.1):** `src/styles.css` applies `env(safe-area-inset-*)` padding, `touch-action: manipulation` on buttons and puzzle cells, `overscroll-behavior-y: none`, and viewport-bounded Crossword/Sudoku spacing (`has-keyboard` on desktop, safe-area-aware board sizing on mobile); `src/components/Background/cameraFraming.ts` adjusts Orbit Word's 3D camera distance on narrow/portrait viewports so `Keyboard3D` never clips horizontally.
+- **Tests:** `tests/pwa.test.ts` (standalone / iOS Safari / install-mode logic, `promptInstall`, and `index.html` contract) and `tests/camera.test.ts` (responsive 3D camera distance). `npm test` runs 33 tests.
 - Gameplay stays fully client-side; saved rounds and preferences continue to live in `localStorage`, which the service worker does not touch.
 
 ### Flagged ambiguities

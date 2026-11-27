@@ -1,4 +1,12 @@
-# Handoff Spec: GuestWorld (v0.7.0)
+# Handoff Spec: GuestWorld (v0.7.1)
+
+
+## v0.7.1 implementation addendum
+
+Fixes keyboard overflow in standalone PWA and narrow/portrait viewports (verified on iPhone 15 Pro `393×852` and desktop `1280×800` / `1024×768`):
+
+- **Orbit Word 3D keyboard framing:** `getCameraDistance` in `src/components/Background/cameraFraming.ts` pulls the Three.js camera back from `z = 10.5` when viewport aspect narrows (`REQUIRED_HALF_WIDTH = 3.55`), keeping `Keyboard3D` inside the frame on portrait and narrow PWA windows while preserving `10.5` on desktop; `ParallaxRig` snaps initial `z` on frame 1 and scales parallax drift on narrow viewports, and `CelebrationRig` reuses the same responsive arc radius.
+- **Crossword & Sudoku layout fit:** `CrosswordGame` scopes active-clue scroll inside `.crossword-clues` (`cluesRef`) and toggles `.has-keyboard` on desktop so opening `⌨ Keys` caps the board height (`calc(100dvh - 410px)`) and fits cleanly in the viewport; mobile (`≤640px`) tightens header/spacing and bounds `.crossword-board` using `100dvh` and `env(safe-area-inset-*)` so keyboards stay above the iPhone Home Indicator.
 
 
 ## v0.7.0 implementation addendum
