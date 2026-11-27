@@ -1,4 +1,11 @@
-# Handoff Spec: GuestWorld (v0.7.2)
+# Handoff Spec: GuestWorld (v0.7.3)
+
+
+## v0.7.3 implementation addendum
+
+- **Navigation scroll reset:** `App` resets `window.scrollTo(0, 0)` on `screen` change so mobile transitions from the scrollable hub always start at the top of the destination screen.
+- **Responsive HUD & EndOverlay:** `.hud-bar` uses `max-width: 100%`, single-line `.hud-item`/`.hud-menu-link`, compact mobile spacing (`≤640px`), and a wrapping fallback at `≤360px`; `.end-overlay` adds safe-area horizontal padding with `.end-card { width: min(420px, 100%); }` and wrapping stats/actions.
+- **Tablet Crossword & mobile ergonomics:** `@media (max-width: 768px)` clamps `.crossword-board` (`calc(100dvh - 520px - safe-area)`) so the 9×9 board and keyboard fit on `768×1024` iPad portrait; touch targets are enlarged (`.back-link` 44px, `.hud-menu-link` 36px, `.cw-step-btn`/`.cw-dir-badge` 36px, `.cw-lang-btn` 32px) and Crossword playable cell contrast is raised (`#1b254a` / `#243b6b` vs `#040614` blocks).
 
 
 ## v0.7.2 implementation addendum

@@ -55,6 +55,7 @@ Crossword puzzles are generated live in the browser across 56 distinct validated
 - `src/components/`: shared presentation and the 3D Word scene.
 - `src/assets/`: web-ready covers and fonts.
 - `docs/plans/0001-game-selection-sudoku.md`: decisions and implementation record.
+- `docs/releases/v0.7.3.md`: v0.7.3 release notes.
 - `docs/releases/v0.7.2.md`: v0.7.2 release notes.
 - `docs/releases/v0.7.1.md`: v0.7.1 release notes.
 - `docs/releases/v0.7.0.md`: v0.7.0 release notes.
