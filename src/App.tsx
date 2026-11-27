@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { GameSelection } from './components/Menu/GameSelection'
 import { MenuOverlay } from './components/Menu/MenuOverlay'
 import { HUDOverlay } from './components/UI/HUDOverlay'
@@ -23,6 +23,9 @@ function WordGame() {
 export function App() {
   const screen = useAppStore(s => s.screen)
   const phase = useGameStore(s => s.phase)
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [screen])
   return <div className={`app screen-${screen}`}>
     <div className="scene-layer" aria-hidden="true"><SceneBoundary><Suspense fallback={null}>
       <Scene wordVisible={screen === 'word'} finished={screen === 'word' && (phase === 'won' || phase === 'lost')} steady={screen === 'sudoku' || screen === 'crossword'} />
